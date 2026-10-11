@@ -820,7 +820,9 @@ function applyTexts(grid,chosen,cols,rows){
   items.forEach((t,ti)=>{
     const text=(FONT[t.estilo]?t.texto:t.texto.toUpperCase()).trim();if(!text){S.textNotes[ti]=null;return}
     let cx=t.cx*cols,cy=t.cy*rows;const hA=Math.max(3,t.alto*cols);
-    if(t.manual&&t.cv!==2){const cnt=new Map(),r0=t.radio*cols,hw=t.ancho*cols/2;
+    // letras puestas a mano: solo se escriben encima; se borra algo de la imagen únicamente si se pide con la casilla
+    const wantErase=t.manual?!!t.erase:!t.noErase;
+    if(t.manual&&wantErase&&t.cvE!==1){const cnt=new Map(),r0=t.radio*cols,hw=t.ancho*cols/2;
       for(let i=0;i<grid.length;i++){const v=grid[i];const X=i%cols+.5,Y=((i/cols)|0)+.5;let inB;
         if(t.forma==='recto')inB=Math.abs(Y-cy)<=hA*.9&&Math.abs(X-cx)<=hw;
         else inB=Math.abs(Math.hypot(X-cx,Y-cy)-r0)<=hA*1.2&&(t.forma==='arco_arriba'?Y<cy:Y>cy);
@@ -828,10 +830,10 @@ function applyTexts(grid,chosen,cols,rows){
       const ord=[...cnt.entries()].sort((a,b)=>b[1]-a[1]);
       // letras viejas = el segundo color de la franja, si de verdad hay uno; si la franja es de un solo color, no hay nada que borrar
       const sec=ord.length>1&&ord[1][1]>=ord[0][1]*.12?ord[1][0]:null;
-      t.cv=2;t.colorFixed=true;
-      if(sec!==null&&sec>=0){t.color=chosen[sec].hex;t.noErase=false}else{t.noErase=true;t.color='#808080'}}
+      t.cvE=1;t.colorFixed=true;
+      if(sec!==null&&sec>=0){t.color=chosen[sec].hex;t.noOld=false}else{t.noOld=true}}
     const tl=rgb2lab(...hex2rgb(t.color.slice(1)));
-    const isText=v=>!t.noErase&&v>=0&&d2(chosen[v].lab,tl)<700;
+    const erasing=wantErase&&!t.noOld,isText=v=>erasing&&v>=0&&d2(chosen[v].lab,tl)<700;
     const like=[];for(let i=0;i<grid.length;i++)if(isText(grid[i]))like.push(i);
     const isArc=t.forma!=='recto',top=t.forma==='arco_arriba';
     let r=t.radio*cols;
@@ -876,7 +878,7 @@ function applyTexts(grid,chosen,cols,rows){
       const LL=ab[0]**2+ab[1]**2+ab[2]**2||1,u=Math.max(0,Math.min(1,(ap[0]*ab[0]+ap[1]*ab[1]+ap[2]*ab[2])/LL));
       return d2(p,[tl[0]+ab[0]*u,tl[1]+ab[1]*u,tl[2]+ab[2]*u])<220};
     // se borran las letras viejas; si el fondo se borda, nunca se deja la tela al descubierto
-    if(!t.noErase&&(fill>=0||$('bgoff').checked))for(const i of band){const v=grid[i];if(isText(v)||mixed(v))grid[i]=fill}
+    if(erasing&&(fill>=0||$('bgoff').checked))for(const i of band){const v=grid[i];if(isText(v)||mixed(v))grid[i]=fill}
     // letras nuevas, todas derechas y de izquierda a derecha
     const ci=textColorIndex(t,chosen,tl,fill>=0?chosen[fill].lab:null),OX=t.ox||0,OY=t.oy||0,box={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
     let pos=-half;
@@ -912,7 +914,12 @@ function renderTexts(){
       row.append(size,mv);
       const note=el('p','note');note.id='tnote'+i;
       const del=btn('✕ Quitar estas letras','',()=>{items.splice(items.indexOf(t),1);box.dataset.for='';retext(false)},'danger small');
-      it.append(head,inp,el('p','lbl','Estilo de letra'),sty,el('p','lbl','Color'),tc,row,note,del);box.appendChild(it)});
+      it.append(head,inp,el('p','lbl','Estilo de letra'),sty,el('p','lbl','Color'),tc,row,note);
+      if(t.manual){const lb=el('label','check'),cb=el('input');cb.type='checkbox';cb.checked=!!t.erase;
+        cb.onchange=()=>{t.erase=cb.checked;t.cvE=0;t.color='#808080';retext(false)};
+        const sp=el('span');sp.innerHTML='<b>Borrar las letras borrosas que ya traía la imagen aquí.</b> Úsalo solo si tu imagen tenía letras en este lugar.';
+        lb.append(cb,sp);it.appendChild(lb)}
+      it.appendChild(del);box.appendChild(it)});
   }
   items.forEach((t,i)=>{const n=$('tnote'+i);if(!n)return;const info=S.textNotes&&S.textNotes[i];
     renderStyleCur($('scur'+i),t);
