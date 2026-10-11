@@ -8,16 +8,16 @@
 /* Layout: una sola columna tipo cuaderno de labores; cada paso es una tarjeta, el patrón ocupa todo el ancho */
 :root{
   --bg:#EEF1F6; --surface:#FFFFFF; --ink:#1C2333; --muted:#566079; --line:#D5DBE6;
-  --accent:#24408E; --accent-ink:#FFFFFF; --accent-soft:#E2E8F7; --rose:#C72B3B; --ok:#2F7A4A; --warnbg:#FFF4D6; --warnline:#E2B44A;
+  --accent:#24408E; --accent-ink:#FFFFFF; --accent-soft:#E2E8F7; --rose:#C72B3B; --ok:#2F7A4A; --warnbg:#FFF4D6; --warnline:#E2B44A; --chartbg:#FFFFFF;
   --f-display:"Instrument Serif", Georgia, "Times New Roman", serif;
   --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
-  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; color-scheme:dark}}
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; --chartbg:#151922; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
-  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; color-scheme:dark}
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; --chartbg:#151922; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink)}
@@ -62,7 +62,7 @@ select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--
 .chip{flex:none;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px 4px 4px;font:inherit;font-size:.9rem;cursor:pointer;min-height:40px}
 .chip[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
 .sw{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid rgba(0,0,0,.15);flex:none}
-.chartwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+.chartwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:var(--chartbg);-webkit-overflow-scrolling:touch}
 #chart{display:block}
 .progress{display:flex;flex-direction:column;gap:6px}
 .bar{height:10px;border-radius:99px;background:var(--accent-soft);overflow:hidden}
@@ -293,6 +293,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
       </div>
       <div class="topbtns">
         <button class="btn small" type="button" id="mineBtn" hidden>Mis bordados</button>
+        <button class="btn small" type="button" id="themeBtn">🌙 Modo noche</button>
         <button class="btn small" type="button" id="bigText" aria-pressed="false">Aa Letra grande</button>
       </div>
     </div>
@@ -1021,10 +1022,12 @@ function renderFacts(){
 }
 
 // ---------- Dibujo del patrón ----------
+const CHART_DAY={bg:'#ffffff',done:'#EEF0F3',sym:'#111',symDim:'#CDD0D6',box:'#888',boxDim:'#EEE',grid:'#C6CAD3',grid10:'#262B36',num:'#4A5162'};
+const CHART_NIGHT={bg:'#151922',done:'#252B38',sym:'#EEF1F7',symDim:'#3A4152',box:'#9AA3B5',boxDim:'#2A303D',grid:'#323949',grid10:'#AEB6C8',num:'#A2ABBF'};
 function drawChart(ctx,o){
-  const {x0,y0,w,h,cell,m,mode,hi,done}=o;
+  const {x0,y0,w,h,cell,m,mode,hi,done}=o,T=o.dark?CHART_NIGHT:CHART_DAY;
   const W=w*cell+m*2,H=h*cell+m*2;
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
   const showSym=cell>=10;
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=`700 ${Math.round(cell*.62)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
@@ -1032,7 +1035,7 @@ function drawChart(ctx,o){
     const i=(y0+r)*S.cols+(x0+c),p=S.grid[i];if(p<0)continue;
     const col=S.pal[p],x=m+c*cell,y=m+r*cell,dim=hi>=0&&p!==hi;
     if(done&&done.has(i)){
-      ctx.fillStyle='#EEF0F3';ctx.fillRect(x,y,cell,cell);
+      ctx.fillStyle=T.done;ctx.fillRect(x,y,cell,cell);
       ctx.globalAlpha=dim?.25:1;ctx.strokeStyle=col.hex;ctx.lineWidth=Math.max(1.5,cell*.22);ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(x+cell*.22,y+cell*.22);ctx.lineTo(x+cell*.78,y+cell*.78);ctx.moveTo(x+cell*.78,y+cell*.22);ctx.lineTo(x+cell*.22,y+cell*.78);ctx.stroke();ctx.globalAlpha=1;continue;
     }
@@ -1040,20 +1043,20 @@ function drawChart(ctx,o){
       ctx.globalAlpha=dim?.14:1;ctx.fillStyle=col.hex;ctx.fillRect(x,y,cell,cell);ctx.globalAlpha=1;
       if(showSym&&!dim){ctx.fillStyle=col.light?'#111':'#fff';ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
     }else{
-      if(showSym){ctx.fillStyle=dim?'#CDD0D6':'#111';ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
-      else{ctx.fillStyle=dim?'#EEE':'#888';ctx.fillRect(x+1,y+1,cell-2,cell-2)}
+      if(showSym){ctx.fillStyle=dim?T.symDim:T.sym;ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
+      else{ctx.fillStyle=dim?T.boxDim:T.box;ctx.fillRect(x+1,y+1,cell-2,cell-2)}
     }
   }
   // cuadrícula fina
-  if(cell>=5){ctx.strokeStyle='#C6CAD3';ctx.lineWidth=1;ctx.beginPath();
+  if(cell>=5){ctx.strokeStyle=T.grid;ctx.lineWidth=1;ctx.beginPath();
     for(let c=0;c<=w;c++){if((x0+c)%10===0)continue;const X=Math.round(m+c*cell)+.5;ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
     for(let r=0;r<=h;r++){if((y0+r)%10===0)continue;const Y=Math.round(m+r*cell)+.5;ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}ctx.stroke()}
   // cada 10
-  ctx.strokeStyle='#262B36';ctx.lineWidth=Math.max(1.5,cell/7);ctx.beginPath();
+  ctx.strokeStyle=T.grid10;ctx.lineWidth=Math.max(1.5,cell/7);ctx.beginPath();
   for(let c=0;c<=w;c++){if((x0+c)%10&&c!==0&&c!==w)continue;const X=m+c*cell;ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
   for(let r=0;r<=h;r++){if((y0+r)%10&&r!==0&&r!==h)continue;const Y=m+r*cell;ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}ctx.stroke();
   // números
-  ctx.fillStyle='#4A5162';ctx.font=`700 ${o.num||Math.max(10,Math.min(13,m*.42))}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  ctx.fillStyle=T.num;ctx.font=`700 ${o.num||Math.max(10,Math.min(13,m*.42))}px "Atkinson Hyperlegible", system-ui, sans-serif`;
   for(let c=1;c<=w;c++)if((x0+c)%10===0)ctx.fillText(String(x0+c),m+c*cell,m*.38);
   ctx.save();for(let r=1;r<=h;r++)if((y0+r)%10===0){ctx.textAlign='right';ctx.fillText(String(y0+r),m-4,m+r*cell)}ctx.restore();
   // flechas al centro
@@ -1077,7 +1080,7 @@ function drawScreen(){
   const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2,4096/Math.max(W,H)));
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
   const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
-  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done});
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark()});
   renderProgress();
 }
 function centerChart(){const w=$('chartwrap');w.scrollLeft=Math.max(0,(w.scrollWidth-w.clientWidth)/2);w.scrollTop=Math.max(0,(w.scrollHeight-w.clientHeight)/2)}
@@ -1855,6 +1858,17 @@ $('restoreFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)
     toast(n?`Recuperé ${n} bordado${n>1?'s':''}`:'Ya tenías todos esos bordados')};
   rd.readAsText(f)};
 $('newBtn').onclick=()=>{$('s1').scrollIntoView({block:'start'});setTimeout(()=>{if(!$('searchForm').hidden)$('q').focus()},400)};
+
+// ---------- Modo día y noche ----------
+// sin escoger, sigue al teléfono; al tocar el botón se queda el que mamá escogió
+const darkMQ=matchMedia('(prefers-color-scheme: dark)');
+function isDark(){const t=document.documentElement.dataset.theme;return t?t==='dark':darkMQ.matches}
+function setTheme(t){if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;
+  const d=isDark();$('themeBtn').textContent=d?'☀️ Modo día':'🌙 Modo noche';$('themeBtn').setAttribute('aria-label',d?'Cambiar a modo día':'Cambiar a modo noche');
+  const mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=d?'#11141C':'#EEF1F6';drawScreen()}
+$('themeBtn').onclick=()=>{const t=isDark()?'light':'dark';store('hilo-tema',t);setTheme(t)};
+try{darkMQ.addEventListener('change',()=>{if(!document.documentElement.dataset.theme)setTheme()})}catch(e){}
+{const t=store('hilo-tema');setTheme(t==='dark'||t==='light'?t:null)}
 
 // ---------- Letra grande ----------
 function setBig(on){document.body.classList.toggle('big',on);$('bigText').setAttribute('aria-pressed',String(on));

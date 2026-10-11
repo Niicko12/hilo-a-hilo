@@ -41,6 +41,17 @@ El código ya trae un **buscador de diseños** y un **asistente que lee la image
 
 Más adelante se pueden conectar a una opción gratuita, como Gemini.
 
+### Cuidado del avance y modo noche
+
+- Si cambias el tamaño, los colores o las letras después de marcar puntadas, **tu avance no se borra**: aparece un aviso con el botón **"↩ Volver a como estaba"**.
+- **🌙 Modo noche / ☀️ Modo día:** botón arriba. Si no escoges, sigue el tema del teléfono. De noche el patrón también se oscurece; el PDF siempre sale en blanco.
+
+## Documentación y pruebas (metodología Oden, versión ligera)
+
+- [docs/](docs/README.md): decisiones técnicas, decisiones registradas (ADRs) y análisis de la competencia.
+- [.claude/prds/mejoras-v2.md](.claude/prds/mejoras-v2.md) y [.claude/epics/mejoras-v2/](.claude/epics/mejoras-v2/epic.md): plan de mejoras en tareas.
+- Pruebas en navegador (usan el Chrome instalado): `cd tests && npm install && npm test`.
+
 ## Cómo está hecha
 
 - Es **un solo archivo**: `index.html`, con HTML, CSS y JavaScript sin dependencias que instalar. El PDF se genera con [jsPDF](https://github.com/parallax/jsPDF), cargado desde cdnjs.

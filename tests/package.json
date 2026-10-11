@@ -1,0 +1,7 @@
+{
+  "name": "hilo-a-hilo-pruebas",
+  "private": true,
+  "description": "Pruebas en navegador de Hilo a Hilo (usa el Chrome instalado)",
+  "scripts": { "test": "node --test" },
+  "devDependencies": { "playwright-core": "1.48.2" }
+}
