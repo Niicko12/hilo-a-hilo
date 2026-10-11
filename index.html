@@ -124,6 +124,7 @@ body.big{font-size:20px}
 .how li{counter-increment:h;display:flex;gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .how li::before{content:counter(h);font-family:var(--f-display);font-size:1.7rem;color:var(--rose);line-height:1}
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px}
+#projName{font:inherit;font-weight:700;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px;width:100%}
 .backup{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
 .backup .lbl{margin:0}
 .addtext{display:flex;flex-direction:column;gap:10px;border:1px dashed var(--line);border-radius:12px;padding:12px}
@@ -356,6 +357,10 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
             <input id="file" type="file" accept="image/*">
             <p class="hint" id="srcname">Ejemplo cargado: maceta con flores.</p>
           </div>
+        </div>
+        <div class="field" id="nameField" hidden>
+          <label for="projName">Nombre del bordado</label>
+          <input type="text" id="projName" maxlength="40" autocomplete="off" placeholder="Ej. Gatito para Lupita">
         </div>
         <p class="hint">Funcionan mejor dibujos sencillos, flores, mascotas con fondo liso o fotos de cerca.</p>
       </div>
@@ -1286,15 +1291,17 @@ async function shareWhatsApp(file,text){
   try{if(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return}}
   catch(e){if(e&&e.name==='AbortError')return}
   const st=await offerFile(file.name,file);if(st!=='saved')return;
-  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
+  // sin emoji: el enlace de WhatsApp lo muestra como un signo raro
+  window.open('https://wa.me/?text='+encodeURIComponent(text.replace(/\s*\p{Extended_Pictographic}/gu,'')),'_blank','noopener');
   toast('Ya se guardó el archivo. En WhatsApp tócale al clip 📎 para mandarlo.');
 }
 // tarjeta bonita con el bordado terminado, su nombre y sus medidas
 function shareCard(){
-  const s=Math.max(4,Math.min(10,Math.floor(900/Math.max(S.cols,S.rows)))),pw=S.cols*s,ph=S.rows*s,W=Math.max(pw+120,720),top=130,H=top+ph+150;
+  const s=Math.max(4,Math.min(10,Math.floor(900/Math.max(S.cols,S.rows)))),pw=S.cols*s,ph=S.rows*s,W=Math.max(pw+120,720),top=140+s*3,H=top+ph+150;
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');const F='"Atkinson Hyperlegible", system-ui, sans-serif';
   x.fillStyle='#FBF8F2';x.fillRect(0,0,W,H);
-  x.fillStyle='#1C2333';x.textAlign='center';x.textBaseline='middle';x.font=`700 42px ${F}`;x.fillText((S.proj&&S.proj.name)||'Mi bordado',W/2,58);
+  x.fillStyle='#1C2333';x.textAlign='center';x.textBaseline='middle';// el nombre se achica si es largo, para que siempre quepa
+  const title=(S.proj&&S.proj.name)||'Mi bordado';let fs=42;do{x.font=`700 ${fs}px ${F}`;fs-=2}while(fs>22&&x.measureText(title).width>W-60);x.fillText(title,W/2,58);
   x.fillStyle='#566079';x.font=`400 24px ${F}`;x.fillText('Bordado en punto de cruz',W/2,100);
   const ox=(W-pw)/2,oy=top,fab=$('fabric').value;x.fillStyle=fab;x.fillRect(ox-s*3,oy-s*3,pw+s*6,ph+s*6);
   x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
@@ -1361,7 +1368,7 @@ $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileR
       const kh=Math.min(1,1600/Math.max(img.width,img.height)),hi=document.createElement('canvas');hi.width=Math.max(1,Math.round(img.width*kh));hi.height=Math.max(1,Math.round(img.height*kh));
       const hx=hi.getContext('2d');hx.fillStyle='#fff';hx.fillRect(0,0,hi.width,hi.height);hx.imageSmoothingQuality='high';hx.drawImage(img,0,0,hi.width,hi.height);
       im.onload=()=>{let name=f.name.replace(/\.[^.]+$/,'').slice(0,40);
-        const generic=!name||/^[0-9a-f-]{16,}$/i.test(name)||/^(img|dsc|pxl|image|photo|foto|screenshot|captura|whatsapp)/i.test(name);if(generic)name='Mi foto';
+        const generic=!name||/^[0-9a-f-]{16,}$/i.test(name)||/^(img|dsc|pxl|image|photo|foto|screenshot|screen ?shot|captura|whatsapp|greenshot|snapshot|pantallazo|imagen|download|descarga|unnamed|signal|telegram|fb_img|received)/i.test(name)||/\d{4}[-_.]\d{2}[-_.]\d{2}/.test(name);if(generic)name='Mi foto';
         S.src=im;S.hiRes=hi;S.fromDesign=false;S.removed=new Set();$('detail').checked=true;$('bgoff').checked=true;
         S.proj={id:'f'+Date.now().toString(36),name,kind:'photo',photo:url,autoName:generic};
         $('thumb').src=url;$('srcname').textContent='Foto: '+name;document.querySelectorAll('.res.sel').forEach(el=>el.classList.remove('sel'));
@@ -1770,7 +1777,12 @@ function openProject(p){
   if(S.fromDesign){$('agent').hidden=true;S.src=designCanvas(p.design,10,false);$('thumb').src=designCanvas(p.design,4,true).toDataURL();process()}
   else{const im=new Image();im.onload=()=>{S.src=im;$('thumb').src=p.photo;process()};im.onerror=()=>toast('No pude abrir ese bordado.');im.src=p.photo;showSavedReading(p)}
 }
+// el nombre se ve en Mis bordados, en la imagen para WhatsApp y en el PDF
+let nameT;$('projName').oninput=()=>{if(!S.proj)return;const v=$('projName').value.trim();clearTimeout(nameT);
+  nameT=setTimeout(()=>{S.proj.name=v||'Mi bordado';S.proj.autoName=false;$('srcname').textContent=(S.fromDesign?'Diseño: ':'Foto: ')+S.proj.name;S.pagesDirty=true;saveSoon()},400)};
+function syncName(){$('nameField').hidden=!S.proj;if(S.proj&&document.activeElement!==$('projName'))$('projName').value=S.proj.name||''}
 function renderMine(){
+  syncName();
   const a=loadProjects(),box=$('mineList');$('mineBtn').hidden=!a.length;$('newBtn').hidden=!a.length;$('backupBtn').hidden=!a.length;box.innerHTML='';
   if(!a.length){const p=document.createElement('p');p.className='note';p.textContent='Todavía no tienes bordados guardados. Sube una foto y aquí aparece.';box.appendChild(p)}
   a.forEach(p=>{
