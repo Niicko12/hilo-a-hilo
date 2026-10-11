@@ -8,16 +8,16 @@
 /* Layout: una sola columna tipo cuaderno de labores; cada paso es una tarjeta, el patrón ocupa todo el ancho */
 :root{
   --bg:#EEF1F6; --surface:#FFFFFF; --ink:#1C2333; --muted:#566079; --line:#D5DBE6;
-  --accent:#24408E; --accent-ink:#FFFFFF; --accent-soft:#E2E8F7; --rose:#C72B3B; --ok:#2F7A4A;
+  --accent:#24408E; --accent-ink:#FFFFFF; --accent-soft:#E2E8F7; --rose:#C72B3B; --ok:#2F7A4A; --warnbg:#FFF4D6; --warnline:#E2B44A;
   --f-display:"Instrument Serif", Georgia, "Times New Roman", serif;
   --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
-  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; color-scheme:dark}}
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
-  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; color-scheme:dark}
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; --warnbg:#3A3017; --warnline:#8A6D22; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink)}
@@ -277,6 +277,9 @@ details.more .grid2{margin-bottom:12px}
   .preview .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
   .chartwrap{max-height:80vh}
 }
+/* aviso cuando un cambio esconde el avance */
+.keepbar{background:var(--warnbg);border:1px solid var(--warnline);border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.keepbar p{margin:0;flex:1 1 240px}
 textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 </style>
 
@@ -312,6 +315,8 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
       <span><b>5</b>Imprimir</span></button>
   </nav>
+
+  <div class="keepbar" id="keepBar" hidden role="status"><p id="keepTxt"></p><button class="btn primary small" type="button" id="keepBtn">↩ Volver a como estaba</button></div>
 
   <!-- 1. Diseño -->
   <section class="panel" id="p-diseno" role="tabpanel" aria-labelledby="t-diseno">
@@ -995,9 +1000,10 @@ function hashGrid(){let h=2166136261;h^=S.cols;for(let i=0;i<S.grid.length;i++){
 
 function afterProcess(){
   S.hi=-1;S.key='hilo-'+hashGrid();
-  S.done=new Set();const saved=store(S.key);if(saved){try{JSON.parse(saved).forEach(i=>S.done.add(i))}catch(e){}}
-  else if(S.proj&&S.proj.doneKey===S.key&&Array.isArray(S.proj.done))S.proj.done.forEach(i=>S.done.add(i));
-  S.undo=[];fitCell(true);renderFacts();renderChips();drawScreen();centerChart();renderThreads();S.pagesDirty=true;updateSimple();renderTexts();saveCurrent();
+  S.done=new Set();const saved=store(S.key),pg=progOf(S.proj);
+  if(saved){try{JSON.parse(saved).forEach(i=>S.done.add(i))}catch(e){}}
+  else if(pg&&pg[S.key])pg[S.key].done.forEach(i=>S.done.add(i));
+  S.undo=[];fitCell(true);renderFacts();renderChips();drawScreen();centerChart();renderThreads();S.pagesDirty=true;updateSimple();renderTexts();saveCurrent();renderKeep();
   if(S.tab==='ajustes')drawPreview();if(S.tab==='hojas')buildPages();
 }
 
@@ -1759,23 +1765,52 @@ function deleteProject(id){PROJ=PROJ.filter(x=>x.id!==id);if(idb)idbDel(id);else
 function currentSettings(){return {width:+$('width').value,colors:+$('colors').value,count:$('count').value,fabric:$('fabric').value,bgoff:$('bgoff').checked,clean:$('clean').checked,detail:$('detail').checked,textfix:$('textfix').checked,removed:[...S.removed]}}
 function saveCurrent(){
   if(!S.proj||!S.grid)return;const tot=totalStitches();let n=0;S.done.forEach(i=>{if(S.grid[i]>=0)n++});
-  S.proj.settings=currentSettings();S.proj.pct=tot?Math.round(n/tot*100):0;S.proj.updated=Date.now();
-  S.proj.done=[...S.done];S.proj.doneKey=S.key;
+  S.proj.settings=currentSettings();S.proj.updated=Date.now();
+  // cada versión del patrón guarda su propio avance: cambiar un ajuste nunca borra lo bordado
+  const pg=progOf(S.proj);if(n||pg[S.key])pg[S.key]={done:[...S.done],at:Date.now()};
+  Object.keys(pg).forEach(k=>{if(k!==S.key&&!pg[k].done.length)delete pg[k]});
+  Object.keys(pg).sort((a,b)=>pg[b].at-pg[a].at).slice(6).forEach(k=>delete pg[k]);
+  const pct=tot?Math.round(n/tot*100):0;
+  if(n)S.proj.anchor={key:S.key,pct,n,settings:currentSettings(),texts:JSON.parse(JSON.stringify(S.proj.texts||[]))};
+  const a=keepInfo();S.proj.pct=n?pct:a?a.pct:0;
   saveProject(S.proj);renderMine();
 }
+// avance por versión del patrón; los bordados guardados a la manera anterior se pasan aquí
+function progOf(p){if(!p)return null;if(!p.prog||typeof p.prog!=='object'){p.prog={};
+    if(p.doneKey&&Array.isArray(p.done)&&p.done.length)p.prog[p.doneKey]={done:p.done,at:p.updated||Date.now()}}
+  delete p.done;delete p.doneKey;return p.prog}
+// hay avance guardado en otra versión y la de ahora no tiene nada
+function keepInfo(){const p=S.proj,a=p&&p.anchor,pg=progOf(p);
+  if(!a||!S.grid||S.done.size||a.key===S.key||!pg||!pg[a.key]||!pg[a.key].done.length)return null;
+  // mismos ajustes y mismas letras: el cambio no lo hizo mamá (por ejemplo, una letra que aún no carga), no se avisa
+  if(JSON.stringify(a.settings)===JSON.stringify(currentSettings())&&JSON.stringify(a.texts)===JSON.stringify(p.texts||[]))return null;
+  return a}
+function renderKeep(){const a=keepInfo(),bar=$('keepBar'),was=!bar.hidden;bar.hidden=!a;if(!a)return;
+  $('keepTxt').textContent=`Con este cambio el patrón quedó distinto y aquí no se ve tu avance (${a.pct>=1?a.pct+'% bordado':fmt(a.n||0)+' puntadas'}). No se perdió: está guardado.`;
+  if(!was)toast('Tu avance sigue guardado. Arriba puedes volver a como estaba.')}
+$('keepBtn').onclick=()=>{const a=S.proj&&S.proj.anchor;if(!a)return;applySettings(a.settings);
+  S.proj.texts=JSON.parse(JSON.stringify(a.texts||[]));$('textList').dataset.for='';process();
+  toast(S.done.size?'Listo, volvió tu avance':'No pude volver a como estaba.')};
 let saveT;function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveCurrent,600)}
-function openProject(p){
-  const s=p.settings||{};
+function applySettings(s){s=s||{};
   if(s.width){$('width').value=s.width;$('widthOut').textContent=s.width}
   if(s.colors){$('colors').value=s.colors;$('colorsOut').textContent=s.colors}
   if(s.count)$('count').value=s.count;if(s.fabric)$('fabric').value=s.fabric;
   if(s.bgoff!==undefined)$('bgoff').checked=s.bgoff;if(s.clean!==undefined)$('clean').checked=s.clean;
   $('detail').checked=s.detail!==undefined?s.detail:false;$('textfix').checked=s.textfix!==false;S.removed=new Set(Array.isArray(s.removed)?s.removed:[]);
+}
+// espera las letras bonitas que usa el bordado (máximo 4 segundos) para que el patrón salga igual que la última vez
+function fontsFor(p){const ks=[...new Set((p.texts||[]).map(t=>t.estilo).filter(k=>FONT[k]&&!FLOADED.has(k)))];
+  if(!ks.length||!document.fonts||!document.fonts.load)return Promise.resolve();
+  return Promise.race([Promise.all(ks.map(k=>{const f=FONT[k];return document.fonts.load(`${f.w} 40px "${f.fam}"`,'AaÁñ').catch(()=>{}).then(()=>{FLOADED.add(k);FCACHE.clear()})})),
+    new Promise(r=>setTimeout(r,4000))])}
+function openProject(p){
+  applySettings(p.settings);
   S.proj=p;S.hiRes=null;S.fromDesign=p.kind==='design';$('srcname').textContent=(S.fromDesign?'Diseño: ':'Foto: ')+p.name;
   document.querySelectorAll('.res.sel').forEach(el=>el.classList.remove('sel'));
   if(agentCtl)agentCtl.abort();$('agentDesigns').innerHTML='';
   if(S.fromDesign){$('agent').hidden=true;S.src=designCanvas(p.design,10,false);$('thumb').src=designCanvas(p.design,4,true).toDataURL();process()}
-  else{const im=new Image();im.onload=()=>{S.src=im;$('thumb').src=p.photo;process()};im.onerror=()=>toast('No pude abrir ese bordado.');im.src=p.photo;showSavedReading(p)}
+  else{const im=new Image();im.onload=()=>{S.src=im;$('thumb').src=p.photo;fontsFor(p).then(()=>{if(S.proj===p)process()})};im.onerror=()=>toast('No pude abrir ese bordado.');im.src=p.photo;showSavedReading(p)}
 }
 // el nombre se ve en Mis bordados, en la imagen para WhatsApp y en el PDF
 let nameT;$('projName').oninput=()=>{if(!S.proj)return;const v=$('projName').value.trim();clearTimeout(nameT);
