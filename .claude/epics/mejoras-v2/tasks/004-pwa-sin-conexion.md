@@ -1,5 +1,5 @@
 # 004 — PWA sin conexión
-Req: R3 · Estado: pendiente
+Req: R3 · Estado: ✅ hecho
 
 ## Qué
 - `manifest.webmanifest` (nombre, colores, iconos 192/512 y maskable, `display: standalone`).
@@ -9,3 +9,6 @@ Req: R3 · Estado: pendiente
 ## Criterios de aceptación
 - Prueba: con la red cortada (`context.setOffline(true)`) tras la primera visita, la página abre, arma el patrón y genera el PDF.
 - Lighthouse: instalable.
+
+## Resultado
+`manifest.webmanifest`, `icons/` y `sw.js` (versión `hilo-v1`). Prueba "sin internet" en `tests/` pasa. Al cambiar archivos guardados, subir `V` en `sw.js`.

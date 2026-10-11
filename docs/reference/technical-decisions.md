@@ -53,7 +53,14 @@ Consecuencias para el diseño:
 
 Cinco pestañas: Diseño · Ajustes · Patrón · Hilos · Imprimir. En celular/tablet chica el menú va abajo, como app; en computadora va arriba y fijo.
 
-### 3.5 Modo día y noche
+### 3.5 Marcar, buscar y sin internet
+
+- **Marcar:** toque = un cuadro (`drawCells`). Dedo quieto 350 ms + arrastrar = pasada del mismo color (`markAt`, `startStroke`, `endStroke`). `S.undo` guarda listas.
+- **Modo bordar** acerca el patrón a cuadros de 28 px (o el máximo que permite `maxCell()`).
+- **Buscar lo que falta** (`#findBtn`, `showCell`): siguiente cuadro sin marcar del hilo escogido.
+- **Sin internet** (`sw.js`): página primero de internet (5 s) y si no, la guardada; jsPDF, letras e iconos salen de la memoria. Instalable con `manifest.webmanifest`. El registro solo ocurre en la página publicada (no dentro de claude.ai).
+
+### 3.6 Modo día y noche
 
 - Sin escoger, sigue el tema del aparato (`prefers-color-scheme`).
 - El botón "🌙 Modo noche / ☀️ Modo día" fija `data-theme` en `<html>` y lo guarda en `localStorage['hilo-tema']`.
@@ -85,11 +92,14 @@ Los campos viejos `done` y `doneKey` se convierten solos a `prog` (`progOf()`).
 
 Chrome con CPU 4× más lenta (para parecerse a una tablet sencilla), imagen de 1000 × 1400:
 
-| Acción | Tiempo | Meta |
-|---|---|---|
-| Procesar ancho 70 con detalle | 313 ms | < 150 ms |
-| Procesar ancho 140 con detalle (140 × 196) | **941 ms** (pantalla congelada) | < 300 ms y sin congelar |
-| Redibujar al marcar 1 puntada | **154 ms** | < 16 ms |
+| Acción (mismas condiciones) | Antes (v1) | Ahora (v2) | Meta |
+|---|---|---|---|
+| Cambiar a ancho 140 con detalle en Ajustes | 941 ms | ~306 ms | < 300 ms |
+| Vista "Cómo se verá" | 287 ms | 12 ms | < 50 ms |
+| Marcar 1 puntada | 154 ms | 0.1 ms | < 16 ms |
+| Abrir la pestaña Patrón (dibujo completo, 140 × 196) | — | ~127 ms | — |
+
+Cómo: tabla `LIN` (sRGB→lineal), Lab en `Float64Array` plano, dibujo agrupado por color (`drawChart`, `drawStitches`), redibujo parcial (`drawCells`) y el patrón escondido no se dibuja (`S.chartDirty`). Las huellas `S.key` no cambiaron, así que el avance guardado sigue valiendo.
 
 ## 6. Reglas para cualquier cambio
 
@@ -110,5 +120,9 @@ Chrome con CPU 4× más lenta (para parecerse a una tablet sencilla), imagen de 
 - Se convierten los bordados guardados a la manera anterior.
 - Modo día y noche sigue al aparato y recuerda lo escogido.
 - El PDF se arma.
+- Marcar arrastrando y Deshacer de la pasada.
+- Buscar lo que falta y contador de la lista de hilos.
+- Sin internet: abre y arma el PDF.
+- Instalable: manifest e iconos.
 
 `docs/`, `.claude/` y `tests/` no se publican en Vercel (`.vercelignore`).

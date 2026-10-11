@@ -15,4 +15,4 @@ El autor empaquetó la app como .apk y la instaló en la tablet de su mamá; fun
 3. **Capacitor/Android Studio:** control total, pero más mantenimiento; no hace falta.
 
 ## Decisión
-Pendiente: depende de qué herramienta se usó y de la prueba en la tablet.
+Pendiente: depende de qué herramienta se usó y de la prueba en la tablet. La opción 2 ya es posible: desde el 2026-10-11 la app es PWA (manifest, iconos, service worker).

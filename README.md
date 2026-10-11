@@ -41,6 +41,12 @@ El código ya trae un **buscador de diseños** y un **asistente que lee la image
 
 Más adelante se pueden conectar a una opción gratuita, como Gemini.
 
+### Marcar, buscar y sin internet
+
+- **Modo bordar:** toca un cuadrito para marcarlo. Para marcar varios del mismo color, **deja el dedo quieto un momento y arrastra**. "Deshacer" quita la última marca o la pasada completa.
+- **🔍 Buscar lo que falta:** escoge un hilo y la app te lleva al siguiente cuadrito sin marcar de ese color. La lista de hilos dice cuántos faltan y cuáles ya están terminados.
+- **Funciona sin internet** después de abrirla una vez, y se puede instalar como app ("Agregar a la pantalla de inicio").
+
 ### Cuidado del avance y modo noche
 
 - Si cambias el tamaño, los colores o las letras después de marcar puntadas, **tu avance no se borra**: aparece un aviso con el botón **"↩ Volver a como estaba"**.
@@ -51,6 +57,7 @@ Más adelante se pueden conectar a una opción gratuita, como Gemini.
 - [docs/](docs/README.md): decisiones técnicas, decisiones registradas (ADRs) y análisis de la competencia.
 - [.claude/prds/mejoras-v2.md](.claude/prds/mejoras-v2.md) y [.claude/epics/mejoras-v2/](.claude/epics/mejoras-v2/epic.md): plan de mejoras en tareas.
 - Pruebas en navegador (usan el Chrome instalado): `cd tests && npm install && npm test`.
+- [CLAUDE.md](CLAUDE.md) y [la bitácora](docs/development/current/bitacora.md): para seguir trabajando desde cualquier sesión de Claude, incluido Claude móvil.
 
 ## Cómo está hecha
 

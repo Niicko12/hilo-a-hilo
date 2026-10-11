@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#EEF1F6"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png" type="image/png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Hilo a Hilo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +63,7 @@ select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--
 .chip[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
 .sw{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid rgba(0,0,0,.15);flex:none}
 .chartwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:var(--chartbg);-webkit-overflow-scrolling:touch}
-#chart{display:block}
+#chart{display:block;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .progress{display:flex;flex-direction:column;gap:6px}
 .bar{height:10px;border-radius:99px;background:var(--accent-soft);overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
@@ -113,6 +113,7 @@ th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
 td.num,th.num{text-align:right}
 tfoot td{font-weight:700;border-bottom:0}
 .code{font-weight:700}
+.tstat{display:block;font-weight:400;font-size:.82em;color:var(--muted)}.tstat.ok{color:var(--ok);font-weight:700}
 .pages{display:flex;flex-direction:column;gap:18px}
 .pages figure{margin:0;display:flex;flex-direction:column;gap:6px}
 .pages img{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
@@ -493,6 +494,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
       <div class="chips" id="chips"></div>
     </div>
     <div class="toolbar">
+      <button class="btn small primary" type="button" id="findBtn" hidden>🔍 Buscar lo que falta</button>
       <button class="btn small" type="button" id="dropColor" hidden>No bordar este color</button>
       <button class="btn small" type="button" id="restoreColors" hidden>Volver a poner los colores quitados</button>
     </div>
@@ -575,11 +577,10 @@ const DMC_RAW = `B5200|Blanco nieve|FFFFFF;White|Blanco|FCFBF8;Ecru|Crudo|F0EADA
 3371|Café ébano|1E1108;938|Café ultra oscuro|361F0E;898|Café muy oscuro|492A13;801|Café oscuro|653919;433|Café medio|7A451F;434|Café claro|985E33;435|Café muy claro|B87748;436|Canela|CB9051;437|Canela claro|E4BB8E;738|Canela muy claro|ECCC9E;739|Canela ultra claro|F8E4C8;3862|Moka oscuro|8A6E4E;3863|Moka medio|A4835C;3864|Moka claro|CBB18A;3031|Moka muy oscuro|4B3C2A;3781|Moka gris oscuro|6B5743;839|Beige café oscuro|675541;840|Beige café medio|9A7C5C;841|Beige café claro|B69B7E;842|Beige café muy claro|D1BAA1;3790|Beige gris ultra oscuro|7F6A55;3045|Beige amarillo oscuro|BC966A;3046|Beige amarillo medio|D8BC9A;3047|Beige amarillo claro|E7D6C1;869|Avellana muy oscuro|835E39;420|Avellana oscuro|A07142;422|Avellana claro|C69F7B;300|Caoba muy oscuro|6F2F00;400|Caoba oscuro|8F430F;301|Caoba medio|B35F2B;402|Caoba muy claro|F7A777;975|Café dorado oscuro|914F12;976|Café dorado medio|C28142;977|Café dorado claro|DC9C56;3826|Café dorado|AD7239;3827|Café dorado pálido|F7BB77`;
 
 function hex2rgb(h){return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+// sRGB a lineal precalculado para los 256 valores: da exactamente los mismos números, sin Math.pow por pixel
+const LIN=new Float64Array(256).map((_,v)=>{const c=v/255;return c>0.04045?Math.pow((c+0.055)/1.055,2.4):c/12.92});
 function rgb2lab(r,g,b){
-  r/=255;g/=255;b/=255;
-  r=r>0.04045?Math.pow((r+0.055)/1.055,2.4):r/12.92;
-  g=g>0.04045?Math.pow((g+0.055)/1.055,2.4):g/12.92;
-  b=b>0.04045?Math.pow((b+0.055)/1.055,2.4):b/12.92;
+  r=LIN[r];g=LIN[g];b=LIN[b];
   let x=(r*0.4124+g*0.3576+b*0.1805)/0.95047, y=(r*0.2126+g*0.7152+b*0.0722), z=(r*0.0193+g*0.1192+b*0.9505)/1.08883;
   const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);
   x=f(x);y=f(y);z=f(z);
@@ -636,25 +637,34 @@ function process(){
   if(rows>250){rows=250;cols=Math.max(10,Math.round(rows*sw/sh))}
   const detail=$('detail').checked, f=detail?4:1, SW=cols*f, SH=rows*f, M=SW*SH, N=cols*rows;
   const data=downscale(S.src,SW,SH);
-  const labs=new Array(M), bg=new Uint8Array(M);
-  for(let i=0;i<M;i++){labs[i]=rgb2lab(data[i*4],data[i*4+1],data[i*4+2]);if(data[i*4+3]<128)bg[i]=1}
+  // Lab de cada pixel en un solo arreglo plano (L,a,b,L,a,b…); muchos pixeles repiten color, así que se recuerda el último
+  const LB=new Float64Array(M*3), bg=new Uint8Array(M);let pk=-1,p0=0,p1=0,p2=0;
+  for(let i=0;i<M;i++){const o=i*4,k=(data[o]<<16)|(data[o+1]<<8)|data[o+2];
+    if(k!==pk){const v=rgb2lab(data[o],data[o+1],data[o+2]);p0=v[0];p1=v[1];p2=v[2];pk=k}
+    LB[i*3]=p0;LB[i*3+1]=p1;LB[i*3+2]=p2;if(data[o+3]<128)bg[i]=1}
+  const lab3=i=>[LB[i*3],LB[i*3+1],LB[i*3+2]];
+  const dP=(i,j)=>{const a=i*3,b=j*3,p=LB[a]-LB[b],q=LB[a+1]-LB[b+1],t=LB[a+2]-LB[b+2];return p*p+q*q+t*t};
+  const dC=(i,c)=>{const a=i*3,p=LB[a]-c[0],q=LB[a+1]-c[1],t=LB[a+2]-c[2];return p*p+q*q+t*t};
   // color de fondo: el más repetido en las orillas
   S.bgHex=null;S.bgLab=null;
   const edge=[];const step=Math.max(1,Math.floor((SW+SH)/80));
   for(let c=0;c<SW;c+=step){edge.push(c,M-SW+c)}for(let r=0;r<SH;r+=step){edge.push(r*SW,r*SW+SW-1)}
   const ed=edge.filter(i=>!bg[i]);
-  if(ed.length){let best=-1,bi=ed[0];for(let a=0;a<ed.length;a+=Math.max(1,Math.floor(ed.length/60))){let n=0;for(const b of ed)if(d2(labs[ed[a]],labs[b])<150)n++;if(n>best){best=n;bi=ed[a]}}
-    if(best>=ed.length*0.35){S.bgLab=labs[bi];S.bgHex='#'+[0,1,2].map(k=>data[bi*4+k].toString(16).padStart(2,'0')).join('')}}
+  if(ed.length){let best=-1,bi=ed[0];for(let a=0;a<ed.length;a+=Math.max(1,Math.floor(ed.length/60))){let n=0;for(const b of ed)if(dP(ed[a],b)<150)n++;if(n>best){best=n;bi=ed[a]}}
+    if(best>=ed.length*0.35){S.bgLab=lab3(bi);S.bgHex='#'+[0,1,2].map(k=>data[bi*4+k].toString(16).padStart(2,'0')).join('')}}
   if($('bgoff').checked&&S.bgLab){
     // zonas del color del fondo: se quitan las que tocan la orilla y las grandes encerradas (dentro de un círculo, por ejemplo);
     // las zonas chicas (ojos, huecos de letras) se quedan bordadas
     const ref=S.bgLab,lab=new Int32Array(M).fill(-1),minArea=M*0.012;
     for(let s0=0;s0<M;s0++){
-      if(lab[s0]>=0||bg[s0]||d2(labs[s0],ref)>=220)continue;
+      if(lab[s0]>=0||bg[s0]||dC(s0,ref)>=220)continue;
       const comp=[s0];lab[s0]=s0;let edgeHit=false;
       for(let k=0;k<comp.length;k++){const i=comp[k],r=(i/SW)|0,c=i%SW;if(r===0||c===0||r===SH-1||c===SW-1)edgeHit=true;
-        const nb=[c>0?i-1:-1,c<SW-1?i+1:-1,r>0?i-SW:-1,r<SH-1?i+SW:-1];
-        for(const j of nb)if(j>=0&&lab[j]<0&&!bg[j]&&d2(labs[j],ref)<220){lab[j]=s0;comp.push(j)}}
+        let j;
+        if(c>0&&lab[j=i-1]<0&&!bg[j]&&dC(j,ref)<220){lab[j]=s0;comp.push(j)}
+        if(c<SW-1&&lab[j=i+1]<0&&!bg[j]&&dC(j,ref)<220){lab[j]=s0;comp.push(j)}
+        if(r>0&&lab[j=i-SW]<0&&!bg[j]&&dC(j,ref)<220){lab[j]=s0;comp.push(j)}
+        if(r<SH-1&&lab[j=i+SW]<0&&!bg[j]&&dC(j,ref)<220){lab[j]=s0;comp.push(j)}}
       if(edgeHit||comp.length>=minArea)for(const i of comp)bg[i]=1;
     }
   }
@@ -664,17 +674,18 @@ function process(){
   // k-means en Lab sobre una muestra
   const stride=Math.max(1,Math.floor(fg.length/30000)),smp=[];for(let j=0;j<fg.length;j+=stride)smp.push(fg[j]);
   const K=Math.min(+$('colors').value,smp.length);
-  const centers=[labs[smp[0]].slice()],md=new Float64Array(smp.length).fill(Infinity);
+  const centers=[lab3(smp[0])],md=new Float64Array(smp.length).fill(Infinity);
   while(centers.length<K){const last=centers[centers.length-1];let bi=0,bd=-1;
-    for(let j=0;j<smp.length;j++){const d=d2(labs[smp[j]],last);if(d<md[j])md[j]=d;if(md[j]>bd){bd=md[j];bi=j}}
-    if(bd<=0)break;centers.push(labs[smp[bi]].slice())}
+    for(let j=0;j<smp.length;j++){const d=dC(smp[j],last);if(d<md[j])md[j]=d;if(md[j]>bd){bd=md[j];bi=j}}
+    if(bd<=0)break;centers.push(lab3(smp[bi]))}
   for(let it=0;it<10;it++){const sum=centers.map(()=>[0,0,0,0]);
-    for(const i of smp){const L=labs[i];let b=0,bd=Infinity;for(let k=0;k<centers.length;k++){const d=d2(L,centers[k]);if(d<bd){bd=d;b=k}}const s=sum[b];s[0]+=L[0];s[1]+=L[1];s[2]+=L[2];s[3]++}
+    for(const i of smp){let b=0,bd=Infinity;for(let k=0;k<centers.length;k++){const d=dC(i,centers[k]);if(d<bd){bd=d;b=k}}const s=sum[b],o=i*3;s[0]+=LB[o];s[1]+=LB[o+1];s[2]+=LB[o+2];s[3]++}
     sum.forEach((s,k)=>{if(s[3])centers[k]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]})}
   const chosen=[],seen=new Set();
   centers.forEach(c=>{let b=null,bd=Infinity;DMC.forEach(d=>{const x=d2(c,d.lab);if(x<bd){bd=x;b=d}});if(!seen.has(b.code)){seen.add(b.code);chosen.push(b)}});
   const sub=new Int16Array(M).fill(-1),glob=new Int32Array(chosen.length);
-  for(const i of fg){const L=labs[i];let b=0,bd=Infinity;for(let k=0;k<chosen.length;k++){const d=d2(L,chosen[k].lab);if(d<bd){bd=d;b=k}}sub[i]=b;glob[b]++}
+  const CL=chosen.map(c=>c.lab);
+  for(const i of fg){let b=0,bd=Infinity;for(let k=0;k<CL.length;k++){const d=dC(i,CL[k]);if(d<bd){bd=d;b=k}}sub[i]=b;glob[b]++}
   // cada cuadrito toma su color; en modo detalle, las líneas finas le ganan al color de relleno
   let dom=0;for(let k=1;k<chosen.length;k++)if(glob[k]>glob[dom])dom=k;
   const votes=new Int32Array(chosen.length),ff=f*f,minFg=detail?0.25:0.5;
@@ -1027,25 +1038,30 @@ const CHART_NIGHT={bg:'#151922',done:'#252B38',sym:'#EEF1F7',symDim:'#3A4152',bo
 function drawChart(ctx,o){
   const {x0,y0,w,h,cell,m,mode,hi,done}=o,T=o.dark?CHART_NIGHT:CHART_DAY;
   const W=w*cell+m*2,H=h*cell+m*2;
+  if(o.only){const z=o.only;ctx.save();ctx.beginPath();ctx.rect(m+z.c0*cell-2,m+z.r0*cell-2,(z.c1-z.c0+1)*cell+4,(z.r1-z.r0+1)*cell+4);ctx.clip()}
   ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
   const showSym=cell>=10;
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.font=`700 ${Math.round(cell*.62)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
-  for(let r=0;r<h;r++)for(let c=0;c<w;c++){
+  // o.only = zona de cuadritos a redibujar (al marcar una puntada no se redibuja todo)
+  const R0=o.only?Math.max(0,o.only.r0):0,R1=o.only?Math.min(h-1,o.only.r1):h-1,C0=o.only?Math.max(0,o.only.c0):0,C1=o.only?Math.min(w-1,o.only.c1):w-1;
+  // se agrupan los cuadritos por color: un solo cambio de color por hilo en vez de varios por cuadrito
+  const n=S.pal.length,cells=Array.from({length:n},()=>[]),marked=Array.from({length:n},()=>[]);
+  for(let r=R0;r<=R1;r++)for(let c=C0;c<=C1;c++){
     const i=(y0+r)*S.cols+(x0+c),p=S.grid[i];if(p<0)continue;
-    const col=S.pal[p],x=m+c*cell,y=m+r*cell,dim=hi>=0&&p!==hi;
-    if(done&&done.has(i)){
-      ctx.fillStyle=T.done;ctx.fillRect(x,y,cell,cell);
-      ctx.globalAlpha=dim?.25:1;ctx.strokeStyle=col.hex;ctx.lineWidth=Math.max(1.5,cell*.22);ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(x+cell*.22,y+cell*.22);ctx.lineTo(x+cell*.78,y+cell*.78);ctx.moveTo(x+cell*.78,y+cell*.22);ctx.lineTo(x+cell*.22,y+cell*.78);ctx.stroke();ctx.globalAlpha=1;continue;
-    }
+    (done&&done.has(i)?marked:cells)[p].push(m+c*cell,m+r*cell)}
+  ctx.font=`700 ${Math.round(cell*.62)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  const sym=(L,t,color)=>{ctx.fillStyle=color;const hc=cell/2;for(let k=0;k<L.length;k+=2)ctx.fillText(t,L[k]+hc,L[k+1]+hc+1)};
+  for(let p=0;p<n;p++){const col=S.pal[p],dim=hi>=0&&p!==hi,L=cells[p],D=marked[p];
+    if(D.length){ctx.fillStyle=T.done;for(let k=0;k<D.length;k+=2)ctx.fillRect(D[k],D[k+1],cell,cell);
+      ctx.globalAlpha=dim?.25:1;ctx.strokeStyle=col.hex;ctx.lineWidth=Math.max(1.5,cell*.22);ctx.lineCap='round';ctx.beginPath();
+      for(let k=0;k<D.length;k+=2){const x=D[k],y=D[k+1];ctx.moveTo(x+cell*.22,y+cell*.22);ctx.lineTo(x+cell*.78,y+cell*.78);ctx.moveTo(x+cell*.78,y+cell*.22);ctx.lineTo(x+cell*.22,y+cell*.78)}
+      ctx.stroke();ctx.globalAlpha=1}
+    if(!L.length)continue;
     if(mode==='color'){
-      ctx.globalAlpha=dim?.14:1;ctx.fillStyle=col.hex;ctx.fillRect(x,y,cell,cell);ctx.globalAlpha=1;
-      if(showSym&&!dim){ctx.fillStyle=col.light?'#111':'#fff';ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
-    }else{
-      if(showSym){ctx.fillStyle=dim?T.symDim:T.sym;ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
-      else{ctx.fillStyle=dim?T.boxDim:T.box;ctx.fillRect(x+1,y+1,cell-2,cell-2)}
-    }
+      ctx.globalAlpha=dim?.14:1;ctx.fillStyle=col.hex;for(let k=0;k<L.length;k+=2)ctx.fillRect(L[k],L[k+1],cell,cell);ctx.globalAlpha=1;
+      if(showSym&&!dim)sym(L,col.sym,col.light?'#111':'#fff');
+    }else if(showSym)sym(L,col.sym,dim?T.symDim:T.sym);
+    else{ctx.fillStyle=dim?T.boxDim:T.box;for(let k=0;k<L.length;k+=2)ctx.fillRect(L[k]+1,L[k+1]+1,cell-2,cell-2)}
   }
   // cuadrícula fina
   if(cell>=5){ctx.strokeStyle=T.grid;ctx.lineWidth=1;ctx.beginPath();
@@ -1063,6 +1079,7 @@ function drawChart(ctx,o){
   ctx.fillStyle='#C72B3B';const t=Math.min(o.num?14:9,m*.3);
   const cx=S.cols/2-x0;if(cx>=0&&cx<=w){const X=m+cx*cell;[[m-2,1],[m+h*cell+2,-1]].forEach(([Y,d])=>{ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(X-t,Y-d*t*1.4);ctx.lineTo(X+t,Y-d*t*1.4);ctx.closePath();ctx.fill()})}
   const cy=S.rows/2-y0;if(cy>=0&&cy<=h){const Y=m+cy*cell;[[m-2,1],[m+w*cell+2,-1]].forEach(([X,d])=>{ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(X-d*t*1.4,Y-t);ctx.lineTo(X-d*t*1.4,Y+t);ctx.closePath();ctx.fill()})}
+  if(o.only)ctx.restore();
 }
 
 function maxCell(){return Math.max(4,Math.min(32,Math.floor(3800/Math.max(S.cols,S.rows))))}
@@ -1076,13 +1093,21 @@ function fitCell(initial){
 }
 function drawScreen(){
   const cv=$('chart');if(!S.grid)return;
+  // escondido en otra pestaña: se dibuja al abrir "Patrón" (ahorra mucho tiempo al mover ajustes)
+  if(S.tab!=='patron'&&cv.width){S.chartDirty=true;renderProgress();return}
+  S.chartDirty=false;
   const W=S.cols*S.cell+2*S.m,H=S.rows*S.cell+2*S.m;
   const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2,4096/Math.max(W,H)));
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
-  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
-  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark()});
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);S.dpr=dpr;
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark()});S.drawnKey=S.key;
   renderProgress();
 }
+// redibuja solo los cuadritos indicados (con uno de margen para las líneas), sin tocar el resto del patrón
+function drawCells(list){if(!S.grid||!list.length)return;const ctx=$('chart').getContext('2d');ctx.setTransform(S.dpr||1,0,0,S.dpr||1,0,0);
+  let r0=1e9,r1=-1,c0=1e9,c1=-1;for(const i of list){const r=(i/S.cols)|0,c=i%S.cols;if(r<r0)r0=r;if(r>r1)r1=r;if(c<c0)c0=c;if(c>c1)c1=c}
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark(),only:{r0,r1,c0,c1}});
+  renderProgress()}
 function centerChart(){const w=$('chartwrap');w.scrollLeft=Math.max(0,(w.scrollWidth-w.clientWidth)/2);w.scrollTop=Math.max(0,(w.scrollHeight-w.clientHeight)/2)}
 function renderProgress(){
   const tot=totalStitches();let n=0;S.done.forEach(i=>{if(S.grid[i]>=0)n++});
@@ -1099,17 +1124,53 @@ function renderChips(){
   mk('Todos',-1,null);S.pal.forEach((p,i)=>mk('',i,p));
 }
 
-$('chart').addEventListener('click',e=>{
-  if(!S.grid)return;const r=$('chart').getBoundingClientRect();
+function cellFromEvent(e){const r=$('chart').getBoundingClientRect();
   const c=Math.floor((e.clientX-r.left-S.m)/S.cell),rw=Math.floor((e.clientY-r.top-S.m)/S.cell);
-  if(c<0||rw<0||c>=S.cols||rw>=S.rows)return;const i=rw*S.cols+c;if(S.grid[i]<0)return;
-  if(S.marking){S.done.has(i)?S.done.delete(i):S.done.add(i);S.undo.push(i);if(S.undo.length>300)S.undo.shift();store(S.key,JSON.stringify([...S.done]));saveSoon();}
-  else{S.hi=S.hi===S.grid[i]?-1:S.grid[i];renderChips()}
-  drawScreen();
+  return c<0||rw<0||c>=S.cols||rw>=S.rows?-1:rw*S.cols+c}
+function saveMarks(){store(S.key,JSON.stringify([...S.done]));saveSoon()}
+// cada paso de deshacer es una lista: un toque o una pasada completa con el dedo
+function pushUndo(list){S.undo.push(list);if(S.undo.length>300)S.undo.shift()}
+$('chart').addEventListener('click',e=>{
+  if(!S.grid)return;if(S.skipClick){S.skipClick=false;return}
+  const i=cellFromEvent(e);if(i<0||S.grid[i]<0)return;
+  if(S.marking){S.done.has(i)?S.done.delete(i):S.done.add(i);pushUndo([i]);saveMarks();drawCells([i])}
+  else{S.hi=S.hi===S.grid[i]?-1:S.grid[i];renderChips();drawScreen()}
 });
+// ---------- Marcar arrastrando ----------
+// en modo bordar: dejar el dedo quieto un momento y arrastrar marca todos los cuadritos de ese color por donde pasa.
+// si el dedo se mueve enseguida, es para mover el patrón como siempre. Con el mouse basta con arrastrar.
+let stroke=null,press=null,pressT=0;
+function markAt(i){if(!stroke||i<0||i===stroke.last)return;
+  // se rellenan los cuadritos intermedios si el dedo fue rápido
+  const from=stroke.last;stroke.last=i;const steps=[];
+  if(from>=0){const r0=(from/S.cols)|0,c0=from%S.cols,r1=(i/S.cols)|0,c1=i%S.cols,n=Math.max(Math.abs(r1-r0),Math.abs(c1-c0));
+    for(let k=1;k<=n;k++)steps.push(Math.round(r0+(r1-r0)*k/n)*S.cols+Math.round(c0+(c1-c0)*k/n))}else steps.push(i);
+  const ch=[];for(const j of steps){if(S.grid[j]!==stroke.color||S.done.has(j)===stroke.add)continue;stroke.add?S.done.add(j):S.done.delete(j);stroke.list.push(j);ch.push(j)}
+  if(ch.length)drawCells(ch)}
+function startStroke(){if(!press)return;const i=press.i;stroke={color:S.grid[i],add:!S.done.has(i),list:[],last:-1};
+  try{$('chart').setPointerCapture(press.id)}catch(err){}markAt(i);try{if(navigator.vibrate)navigator.vibrate(15)}catch(err){}}
+function endStroke(){clearTimeout(pressT);
+  if(stroke){if(stroke.list.length){pushUndo(stroke.list);saveMarks()}S.skipClick=true;setTimeout(()=>{S.skipClick=false},400)}
+  stroke=null;press=null}
+$('chart').addEventListener('pointerdown',e=>{if(!S.marking||!S.grid||e.button>0)return;const i=cellFromEvent(e);if(i<0||S.grid[i]<0)return;
+  press={x:e.clientX,y:e.clientY,id:e.pointerId,i,mouse:e.pointerType==='mouse'};
+  if(!press.mouse)pressT=setTimeout(startStroke,350)});
+$('chart').addEventListener('pointermove',e=>{if(!press||e.pointerId!==press.id)return;
+  if(!stroke){if(Math.hypot(e.clientX-press.x,e.clientY-press.y)<8)return;
+    if(press.mouse)startStroke();else{clearTimeout(pressT);press=null;return}}
+  markAt(cellFromEvent(e))});
+$('chart').addEventListener('pointerup',endStroke);$('chart').addEventListener('pointercancel',endStroke);
+$('chart').addEventListener('touchmove',e=>{if(stroke)e.preventDefault()},{passive:false});
+$('chart').addEventListener('contextmenu',e=>{if(S.marking)e.preventDefault()});
 
 // ---------- Vista bordada ----------
 function shade(hex,f){const [r,g,b]=hex2rgb(hex.slice(1));const t=f<0?0:255,p=Math.abs(f);return `rgb(${Math.round((t-r)*p+r)},${Math.round((t-g)*p+g)},${Math.round((t-b)*p+b)})`}
+// puntadas en cruz agrupadas por color: un trazo por hilo y dirección, en vez de dos por cuadrito
+function drawStitches(x,ox,oy,s){const n=S.pal.length,q=s*.14,cells=Array.from({length:n},()=>[]);
+  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const p=S.grid[r*S.cols+c];if(p>=0)cells[p].push(ox+c*s,oy+r*s)}
+  for(let p=0;p<n;p++){const L=cells[p];if(!L.length)continue;const hx=S.pal[p].hex;
+    x.strokeStyle=shade(hx,-.18);x.beginPath();for(let k=0;k<L.length;k+=2){const X=L[k],Y=L[k+1];x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q)}x.stroke();
+    x.strokeStyle=shade(hx,.06);x.beginPath();for(let k=0;k<L.length;k+=2){const X=L[k],Y=L[k+1];x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q)}x.stroke()}}
 function drawPreview(){
   const cv=$('preview');if(!S.grid)return;
   const maxW=Math.min($('p-vista').clientWidth-36,760);
@@ -1119,13 +1180,8 @@ function drawPreview(){
   const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);S.pv={s,pad,W};
   const fab=$('fabric').value;x.fillStyle=fab;x.fillRect(0,0,W,H);
   const dark=fab==='#232323';
-  if(s>=5){x.fillStyle=dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.09)';for(let r=0;r<=S.rows+6;r++)for(let c=0;c<=S.cols+6;c++)x.fillRect(c*s-1,r*s-1,2,2)}
-  x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
-  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){
-    const p=S.grid[r*S.cols+c];if(p<0)continue;const hx=S.pal[p].hex,X=pad+c*s,Y=pad+r*s,q=s*.14;
-    x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
-    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke();
-  }
+  if(s>=5){x.fillStyle=dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.09)';x.beginPath();for(let r=0;r<=S.rows+6;r++)for(let c=0;c<=S.cols+6;c++)x.rect(c*s-1,r*s-1,2,2);x.fill()}
+  x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);drawStitches(x,pad,pad,s);
   // recuadros alrededor de las letras mientras se mueven
   const boxes=S.textBoxes||[],show=S.moveMode||drag||hoverText>=0;
   if(show)boxes.forEach((b,i)=>{if(!b)return;const on=drag?drag.ti===i:hoverText===i;
@@ -1174,8 +1230,10 @@ function listText(){
 }
 function renderThreads(){
   const tb=$('tbody');tb.innerHTML='';
-  S.pal.forEach(p=>{const tr=document.createElement('tr');const k=skeinsFor(p.count);
-    tr.innerHTML=`<td><span class="sw" style="background:${p.hex};color:${p.light?'#111':'#fff'}">${p.sym}</span></td><td class="code">${p.code}<span class="cname">${p.name}</span></td><td class="name">${p.name}</td><td class="num">${fmt(p.count)}</td><td class="num">${k}</td>`;tb.appendChild(tr)});
+  const hechas=new Int32Array(S.pal.length);S.done.forEach(i=>{const g=S.grid[i];if(g>=0)hechas[g]++});
+  S.pal.forEach((p,n)=>{const tr=document.createElement('tr');const k=skeinsFor(p.count),h=hechas[n];
+    const st=h>=p.count?'<span class="tstat ok">✓ terminado</span>':h?`<span class="tstat">faltan ${fmt(p.count-h)}</span>`:'';
+    tr.innerHTML=`<td><span class="sw" style="background:${p.hex};color:${p.light?'#111':'#fff'}">${p.sym}</span></td><td class="code">${p.code}<span class="cname">${p.name}</span>${st}</td><td class="name">${p.name}</td><td class="num">${fmt(p.count)}</td><td class="num">${k}</td>`;tb.appendChild(tr)});
   $('totSt').textContent=fmt(totalStitches());$('totSk').textContent=S.pal.reduce((a,p)=>a+skeinsFor(p.count),0);
   $('threadHint').textContent=`Cálculo para Aida ${$('count').value} bordando con ${strands()} hebras. Cada madeja DMC trae 8 m de 6 hebras; ya incluye un poco de sobrante para rematar.`;
   $('listText').value=listText();
@@ -1314,9 +1372,7 @@ function shareCard(){
   x.fillStyle='#566079';x.font=`400 24px ${F}`;x.fillText('Bordado en punto de cruz',W/2,100);
   const ox=(W-pw)/2,oy=top,fab=$('fabric').value;x.fillStyle=fab;x.fillRect(ox-s*3,oy-s*3,pw+s*6,ph+s*6);
   x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
-  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const p=S.grid[r*S.cols+c];if(p<0)continue;const hx=S.pal[p].hex,X=ox+c*s,Y=oy+r*s,q=s*.14;
-    x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
-    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke()}
+  drawStitches(x,ox,oy,s);
   const ct=+$('count').value;x.fillStyle='#1C2333';x.font=`700 26px ${F}`;
   x.fillText(`${(S.cols/ct*2.54).toFixed(1)} × ${(S.rows/ct*2.54).toFixed(1)} cm · Aida ${ct} · ${S.pal.length} colores DMC`,W/2,oy+ph+s*3+52);
   x.fillStyle='#C72B3B';x.font=`400 22px ${F}`;x.fillText('Hecho con Hilo a Hilo',W/2,oy+ph+s*3+98);
@@ -1348,10 +1404,13 @@ $('zOut').onclick=()=>{S.cell=Math.max(4,S.cell-3);drawScreen()};
 $('zFit').onclick=()=>{fitCell(false);drawScreen();centerChart()};
 let wake=null;
 $('marking').onchange=e=>{S.marking=e.target.checked;$('undoBtn').hidden=!S.marking;
-  if(S.marking){toast('Toca cada cuadrito que ya bordaste');try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wake=w}).catch(()=>{})}catch(err){}}
+  if(S.marking){toast('Toca cada cuadrito que ya bordaste. Para marcar varios, deja el dedo quieto un momento y arrastra.');
+    // se acerca el patrón para que cada cuadrito quepa bien bajo el dedo, sin perder dónde estaba
+    const want=Math.min(maxCell(),28);if(S.cell<want){const w=$('chartwrap'),fx=(w.scrollLeft+w.clientWidth/2-S.m)/S.cell,fy=(w.scrollTop+w.clientHeight/2-S.m)/S.cell;
+      S.cell=want;drawScreen();w.scrollLeft=Math.max(0,S.m+fx*S.cell-w.clientWidth/2);w.scrollTop=Math.max(0,S.m+fy*S.cell-w.clientHeight/2)}try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wake=w}).catch(()=>{})}catch(err){}}
   else if(wake){wake.release().catch(()=>{});wake=null}};
-$('undoBtn').onclick=()=>{const i=S.undo.pop();if(i===undefined){toast('No hay nada que deshacer');return}
-  S.done.has(i)?S.done.delete(i):S.done.add(i);store(S.key,JSON.stringify([...S.done]));drawScreen();saveSoon()};
+$('undoBtn').onclick=()=>{const L=S.undo.pop();if(!L){toast('No hay nada que deshacer');return}
+  L.forEach(i=>{S.done.has(i)?S.done.delete(i):S.done.add(i)});saveMarks();drawCells(L)};
 let armed=false;$('resetProg').onclick=()=>{const b=$('resetProg');
   if(!armed){armed=true;b.textContent='¿Seguro? Toca otra vez';setTimeout(()=>{armed=false;b.textContent='Borrar avance'},3000);return}
   armed=false;b.textContent='Borrar avance';S.done.clear();S.undo=[];store(S.key,'[]');drawScreen();saveSoon();toast('Avance borrado')};
@@ -1360,8 +1419,8 @@ const PANELS=['diseno','ajustes','patron','hilos','hojas'];
 function go(tab,keepScroll){
   S.tab=tab;document.querySelectorAll('.menu button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===tab)));
   PANELS.forEach(t=>$('p-'+t).hidden=t!==tab);
-  if(tab==='ajustes')drawPreview();if(tab==='hojas')buildPages();
-  if(tab==='patron'&&S.fitPending&&S.grid){fitCell(true);drawScreen();centerChart()}
+  if(tab==='ajustes')drawPreview();if(tab==='hojas')buildPages();if(tab==='hilos')renderThreads();
+  if(tab==='patron'&&S.grid&&(S.fitPending||S.chartDirty)){const fresh=S.fitPending||S.drawnKey!==S.key;if(S.fitPending)fitCell(true);drawScreen();if(fresh)centerChart()}
   if(!keepScroll)window.scrollTo(0,0);
 }
 document.querySelectorAll('.menu button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
@@ -1725,16 +1784,31 @@ $('restoreColors').onclick=()=>{S.removed.clear();toast('Colores de vuelta');pro
 
 // ---------- Guía hilo por hilo ----------
 function renderGuide(){
-  $('dropColor').hidden=S.hi<0;
+  $('dropColor').hidden=S.hi<0;$('findBtn').hidden=true;
   const g=$('gmid');g.innerHTML='';if(!S.pal.length)return;
   const txt=document.createElement('div');txt.style.minWidth='0';const a=document.createElement('strong'),b=document.createElement('small');
   if(S.hi<0){a.textContent='Borda hilo por hilo';b.textContent='Toca ▶ para empezar con el primer color.';}
   else{const p=S.pal[S.hi];let n=0;S.done.forEach(i=>{if(S.grid[i]===S.hi)n++});
     const sw=document.createElement('span');sw.className='sw';sw.style.background=p.hex;sw.style.color=p.light?'#111':'#fff';sw.textContent=p.sym;g.appendChild(sw);
     a.textContent=`Hilo ${S.hi+1} de ${S.pal.length}: DMC ${p.code}`;
-    b.textContent=n>=p.count?`${p.name} · ¡Terminado! Toca ▶ para el siguiente.`:`${p.name} · busca el símbolo ${p.sym} · faltan ${fmt(p.count-n)} puntadas`;}
+    b.textContent=n>=p.count?`${p.name} · ¡Terminado! Toca ▶ para el siguiente.`:`${p.name} · busca el símbolo ${p.sym} · faltan ${fmt(p.count-n)} de ${fmt(p.count)} puntadas`;
+    $('findBtn').hidden=n>=p.count;}
   txt.append(a,b);g.appendChild(txt);
 }
+// ---------- Buscar lo que falta ----------
+// salta al siguiente cuadrito sin marcar del hilo escogido y lo señala con un cuadro rojo
+$('findBtn').onclick=()=>{if(S.hi<0||!S.grid)return;const N=S.grid.length,from=S.findAt>=0&&S.grid[S.findAt]===S.hi?S.findAt+1:0;
+  for(let k=0;k<N;k++){const i=(from+k)%N;if(S.grid[i]===S.hi&&!S.done.has(i)){S.findAt=i;showCell(i);return}}
+  toast('¡Ya no falta ninguno de este color!')};
+let flashT=0;
+function showCell(i){const r=(i/S.cols)|0,c=i%S.cols,w=$('chartwrap');
+  if(S.cell<16){S.cell=Math.min(maxCell(),22);drawScreen()}
+  w.scrollIntoView({block:'nearest',behavior:'smooth'});
+  w.scrollLeft=Math.max(0,S.m+(c+.5)*S.cell-w.clientWidth/2);w.scrollTop=Math.max(0,S.m+(r+.5)*S.cell-w.clientHeight/2);
+  const ctx=$('chart').getContext('2d');ctx.setTransform(S.dpr||1,0,0,S.dpr||1,0,0);
+  ctx.strokeStyle='#C72B3B';ctx.lineWidth=3;ctx.strokeRect(S.m+c*S.cell-3,S.m+r*S.cell-3,S.cell+6,S.cell+6);
+  // el cuadro rojo se borra solo; se redibujan los vecinos que tapó
+  clearTimeout(flashT);flashT=setTimeout(()=>{const L=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const rr=r+dr,cc=c+dc;if(rr>=0&&cc>=0&&rr<S.rows&&cc<S.cols)L.push(rr*S.cols+cc)}drawCells(L)},1800)}
 $('nextC').onclick=()=>{if(!S.pal.length)return;S.hi=(S.hi+1)%S.pal.length;renderChips();drawScreen()};
 $('prevC').onclick=()=>{if(!S.pal.length)return;S.hi=S.hi<=0?S.pal.length-1:S.hi-1;renderChips();drawScreen()};
 
@@ -1875,6 +1949,10 @@ function setBig(on){document.body.classList.toggle('big',on);$('bigText').setAtt
   $('bigText').textContent=on?'Aa Letra normal':'Aa Letra grande';store('hilo-big',on?'1':'0');if(S.grid){fitCell(true);drawScreen()}}
 $('bigText').onclick=()=>setBig(!document.body.classList.contains('big'));
 
+// sin internet: guarda la app en el aparato (solo en la página publicada; dentro de claude.ai no aplica)
+if('serviceWorker' in navigator&&window.top===window&&(location.protocol==='https:'||location.hostname==='localhost'))
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+
 // inicio
 drawBorder();
 let lastW=window.innerWidth,rsT;
@@ -1890,7 +1968,7 @@ initStore().then(()=>{
   else{const smp=sampleImage();S.src=smp;$('thumb').src=smp.toDataURL();process()}
   renderMine();
 });
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawScreen()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{S.pagesDirty=true;drawScreen()});
 </script>
 
 </body></html>
