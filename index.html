@@ -1,0 +1,1526 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Hilo a Hilo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: una sola columna tipo cuaderno de labores; cada paso es una tarjeta, el patrón ocupa todo el ancho */
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#1C2333; --muted:#566079; --line:#D5DBE6;
+  --accent:#24408E; --accent-ink:#FFFFFF; --accent-soft:#E2E8F7; --rose:#C72B3B; --ok:#2F7A4A;
+  --f-display:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141C; --surface:#1A1F2B; --ink:#E8ECF4; --muted:#A2ABBF; --line:#2E3546;
+  --accent:#93ABEE; --accent-ink:#0D1430; --accent-soft:#232C48; --rose:#F07B87; --ok:#6CC28C; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{padding-block:22px 0;display:flex;flex-direction:column;gap:10px}
+#border{width:100%;height:22px;display:block}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.6rem,9vw,3.6rem);line-height:1;margin:6px 0 0;letter-spacing:-.01em}
+h1 em{color:var(--rose)}
+.lead{margin:0;color:var(--muted);max-width:60ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.step{display:flex;align-items:baseline;gap:10px}
+.step b{font-family:var(--f-display);font-weight:400;font-size:1.9rem;color:var(--accent);line-height:1}
+.step h2{margin:0;font-size:1.15rem;text-wrap:balance}
+.hint{margin:0;color:var(--muted);font-size:.95rem}
+.src{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#thumb{width:96px;height:96px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;
+  padding:12px 16px;border-radius:999px;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.seg button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+.btn.small{min-height:40px;padding:8px 14px;font-size:.95rem}
+.btn.danger{color:var(--rose)}
+#file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.field output{font-variant-numeric:tabular-nums;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px}
+select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--accent);margin-top:2px;flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:var(--accent-soft);border-radius:12px;padding:14px}
+.facts div{display:flex;flex-direction:column}
+.facts span{font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.facts strong{font-size:1.15rem;font-variant-numeric:tabular-nums}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{appearance:none;font:inherit;border:0;background:transparent;color:var(--ink);padding:9px 14px;cursor:pointer;min-height:42px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.chip{flex:none;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px 4px 4px;font:inherit;font-size:.9rem;cursor:pointer;min-height:40px}
+.chip[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
+.sw{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid rgba(0,0,0,.15);flex:none}
+.chartwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+#chart{display:block}
+.progress{display:flex;flex-direction:column;gap:6px}
+.bar{height:10px;border-radius:99px;background:var(--accent-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+.switch{display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer}
+.switch input{width:22px;height:22px;accent-color:var(--ok)}
+#preview{display:block;max-width:100%;height:auto;border-radius:10px;margin:0 auto}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+td.num,th.num{text-align:right}
+tfoot td{font-weight:700;border-bottom:0}
+.code{font-weight:700}
+.pages{display:flex;flex-direction:column;gap:18px}
+.pages figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.pages img{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+.pages figcaption{color:var(--muted);font-size:.9rem}
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:700;z-index:10}
+body.big{font-size:20px}
+.how{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;counter-reset:h}
+.how li{counter-increment:h;display:flex;gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.how li::before{content:counter(h);font-family:var(--f-display);font-size:1.7rem;color:var(--rose);line-height:1}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px}
+.addtext{display:flex;flex-direction:column;gap:10px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+.addtext input[type=text]{font:inherit;font-weight:700;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px;width:100%;letter-spacing:.04em}
+#newPos{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.textblock{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.titem{display:flex;flex-direction:column;gap:8px;background:var(--accent-soft);border-radius:12px;padding:12px}
+.titem input[type=text]{font:inherit;font-weight:700;font-size:1.1em;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px;width:100%;letter-spacing:.04em}
+.tbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+.tbtns .btn{min-height:44px;padding:8px 10px;font-size:.95rem}
+.bgrow{display:flex;align-items:center;gap:10px;font-weight:700}
+.bgrow .sw{width:34px;height:34px;border-radius:8px}
+.choice{appearance:none;font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 8px;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;text-align:center}
+.choices.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.choice small{color:var(--muted);font-size:.82em}
+.choice[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.choice[aria-pressed=true] small{color:var(--accent-ink);opacity:.85}
+.choice:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+details.more{border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:700;color:var(--accent);min-height:40px;display:flex;align-items:center}
+details.more[open] summary{margin-bottom:12px}
+details.more .grid2{margin-bottom:12px}
+.guide{display:flex;gap:8px;align-items:stretch}
+.guide .btn{min-width:58px;font-size:1.25rem;border-radius:14px}
+.gmid{flex:1;min-width:0;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:8px 12px;background:var(--accent-soft)}
+.gmid .sw{width:46px;height:46px;font-size:1.25rem}
+.gmid strong{display:block;line-height:1.25}
+.gmid small{display:block;color:var(--muted);font-size:.9rem;line-height:1.3}
+.markrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.proj img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:8px;display:block}
+.proj .row{display:flex;gap:6px;flex-wrap:wrap}
+.proj .row .btn{flex:1}
+.agent{border:1px solid var(--accent);background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.agenthead{display:flex;gap:8px;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--accent);flex:none}
+.agent.busy .dot{animation:pulse 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.agent.busy .dot{animation:none}}
+.agentbody{display:flex;flex-direction:column;gap:10px}
+.agentbody h3{margin:0;font-size:1.15rem}
+.agentbody p{margin:0}
+.agentbody ul{margin:2px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.agentbody .warn{color:var(--rose)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.92rem}
+.asteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.asteps li{display:flex;gap:8px;align-items:baseline;color:var(--muted)}
+.asteps li::before{content:"○";width:1.2em;flex:none;text-align:center;font-weight:700}
+.asteps li[data-st=work]{color:var(--ink);font-weight:700}
+.asteps li[data-st=work]::before{content:"●";color:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+.asteps li[data-st=done]::before{content:"✓";color:var(--ok)}
+.asteps li[data-st=warn]::before{content:"!";color:var(--rose)}
+.asteps li[data-st=skip]::before{content:"–"}
+@media (prefers-reduced-motion:reduce){.asteps li[data-st=work]::before{animation:none}}
+.checks{list-style:none;padding:0!important}
+.checks li::before{content:"✓ ";color:var(--ok);font-weight:700}
+.checks li[data-ok=false]::before{content:"✗ ";color:var(--rose)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;font:inherit;padding:12px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px}
+#ideas .chip{padding:6px 14px}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.res{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--surface);min-width:0}
+.res canvas{width:100%;height:auto;border-radius:8px;display:block}
+.res h3{margin:0;font-size:1rem;line-height:1.25}
+.res p{margin:0;font-size:.85rem;color:var(--muted)}
+.res .btn{min-height:42px;padding:8px 12px;font-size:.95rem}
+.res.sel{box-shadow:0 0 0 3px var(--accent);border-color:var(--accent)}
+.res.ghost{aspect-ratio:3/4;background:var(--accent-soft);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.res.ghost{animation:none}}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.9rem}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+/* ---------- Adaptable a cada pantalla ---------- */
+#sizeChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+#colorChoices{grid-template-columns:repeat(3,minmax(0,1fr))}
+.facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.facts strong{overflow-wrap:anywhere}
+.cname{display:none}
+@media (min-width:600px){
+  #sizeChoices{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* celular: pestañas en 2 × 2 para que se vean todas, tabla de hilos compacta */
+@media (max-width:599px){
+  .card{padding:14px;border-radius:12px}
+  th,td{padding:9px 5px}
+  th.colname,td.name{display:none}
+  .cname{display:block;font-weight:400;font-size:.88em;color:var(--muted);line-height:1.25}
+  .guide .btn{min-width:48px}
+  .results{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}
+  select{font-size:16px;padding-inline:10px}
+}
+@media (max-width:359px){
+  body{padding-inline:10px}
+  .card{padding:12px}
+  #colorChoices .choice{padding:8px 4px}
+  th{letter-spacing:0;font-size:.7rem}
+  th,td{padding-inline:3px}
+}
+/* celular acostado: que el patrón no tape toda la pantalla */
+@media (orientation:landscape) and (max-height:500px){
+  .chartwrap{max-height:82vh}
+}
+/* computadora: pasos 1 y 2 lado a lado, el patrón a todo lo ancho */
+/* ---------- Organización: encabezado, menú y pantallas ---------- */
+.toprow{display:flex;gap:12px 20px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:6px;min-width:0}
+.topbtns{display:flex;gap:8px;flex-wrap:wrap}
+.panel{display:flex;flex-direction:column;gap:18px;min-width:0}
+.group{display:flex;flex-direction:column;gap:10px}
+.group .lbl,.avance .lbl{margin:0}
+.sep{border-top:1px solid var(--line);padding-top:14px}
+.next{display:flex;justify-content:flex-end}
+.next .btn{width:100%}
+.split{display:flex;flex-direction:column;gap:18px;min-width:0}
+.viewbar{justify-content:space-between}
+.zoom{display:flex;gap:8px}
+.avance{display:flex;flex-direction:column;gap:12px;background:var(--accent-soft);border-radius:12px;padding:14px}
+.preview .facts{background:var(--accent-soft)}
+.menu{display:flex;gap:6px;z-index:5}
+.menu button{appearance:none;font:inherit;font-weight:700;color:var(--ink);background:var(--surface);border:1px solid var(--line);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:999px}
+.menu svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.menu b{font-family:var(--f-display);font-weight:400;font-size:1.25em;margin-right:4px;color:var(--rose)}
+.menu button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.menu button[aria-selected=true] b{color:inherit}
+.menu button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+/* celular y tablet chica: menú fijo abajo, como una app */
+@media (max-width:767px){
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .menu{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;
+    background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .menu button{flex-direction:column;gap:2px;border:0;background:transparent;border-radius:12px;padding:6px 2px;min-height:58px;font-size:.78rem;color:var(--muted)}
+  .menu b{display:none}
+  .menu button[aria-selected=true]{background:var(--accent-soft);color:var(--accent)}
+  body.big .menu button{font-size:.72rem}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .toprow{align-items:flex-start}
+}
+/* computadora: menú arriba que se queda fijo al bajar */
+@media (min-width:768px){
+  .menu{position:sticky;top:0;background:var(--bg);padding-block:10px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+  .menu button{padding:8px 10px;gap:6px}
+  .next .btn{width:auto}
+}
+@media (min-width:1000px){
+  .wrap{max-width:1180px}
+  .split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start}
+  .preview{position:sticky;top:84px}
+  .preview .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .chartwrap{max-height:80vh}
+}
+textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <canvas id="border" aria-hidden="true"></canvas>
+    <div class="toprow">
+      <div class="brand">
+        <h1>Hilo a <em>Hilo</em></h1>
+        <p class="lead">Convierte cualquier foto o dibujo en un patrón de punto de cruz, con sus hilos DMC y las madejas que hay que comprar.</p>
+      </div>
+      <div class="topbtns">
+        <button class="btn small" type="button" id="mineBtn" hidden>Mis bordados</button>
+        <button class="btn small" type="button" id="bigText" aria-pressed="false">Aa Letra grande</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="menu" id="menu" role="tablist" aria-label="Menú">
+    <button role="tab" id="t-diseno" data-tab="diseno" aria-selected="true" aria-controls="p-diseno">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>
+      <span><b>1</b>Diseño</span></button>
+    <button role="tab" id="t-ajustes" data-tab="ajustes" aria-selected="false" aria-controls="p-ajustes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+      <span><b>2</b>Ajustes</span></button>
+    <button role="tab" id="t-patron" data-tab="patron" aria-selected="false" aria-controls="p-patron">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      <span><b>3</b>Patrón</span></button>
+    <button role="tab" id="t-hilos" data-tab="hilos" aria-selected="false" aria-controls="p-hilos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12M6 21h12M8 3v18M16 3v18M8 7l8 3M8 11l8 3M8 15l8 3"/></svg>
+      <span><b>4</b>Hilos</span></button>
+    <button role="tab" id="t-hojas" data-tab="hojas" aria-selected="false" aria-controls="p-hojas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+      <span><b>5</b>Imprimir</span></button>
+  </nav>
+
+  <!-- 1. Diseño -->
+  <section class="panel" id="p-diseno" role="tabpanel" aria-labelledby="t-diseno">
+    <section class="card" id="mine" hidden aria-labelledby="mineH">
+      <div class="step"><h2 id="mineH">Mis bordados</h2></div>
+      <p class="hint">Aquí se guardan solos tus patrones y lo que llevas bordado.</p>
+      <div class="results" id="mineList"></div>
+      <button class="btn" type="button" id="newBtn">Empezar un bordado nuevo</button>
+    </section>
+
+    <section class="card" aria-labelledby="s1">
+      <div class="step"><b>1</b><h2 id="s1">Escoge qué bordar</h2></div>
+      <div class="group">
+        <p class="lbl" id="searchLbl">Busca un diseño</p>
+        <form id="searchForm" class="search" role="search">
+          <label for="q" class="sr">Qué quieres bordar</label>
+          <input id="q" type="search" placeholder="Ej. perro, rosas, colibrí…" autocomplete="off" enterkeyhint="search">
+          <button class="btn primary" type="submit" id="searchBtn">Buscar</button>
+        </form>
+        <div class="chips" id="ideas"></div>
+        <p class="hint" id="searchStatus" aria-live="polite">Escribe lo que quieres bordar y te dibujo varios diseños en punto de cruz para escoger.</p>
+        <div class="results" id="results"></div>
+        <div class="toolbar" id="moreRow" hidden>
+          <button class="btn small" type="button" id="moreBtn">Ver otros diseños</button>
+          <button class="btn small danger" type="button" id="stopBtn" hidden>Detener</button>
+        </div>
+      </div>
+      <div class="or"><span>o usa una foto tuya</span></div>
+      <div class="group">
+        <div class="src">
+          <img id="thumb" alt="Imagen original">
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+            <label class="btn primary" for="file">Subir foto o dibujo</label>
+            <input id="file" type="file" accept="image/*">
+            <p class="hint" id="srcname">Ejemplo cargado: maceta con flores.</p>
+          </div>
+        </div>
+        <p class="hint">Funcionan mejor dibujos sencillos, flores, mascotas con fondo liso o fotos de cerca.</p>
+      </div>
+      <div class="agent" id="agent" hidden aria-live="polite">
+        <div class="agenthead"><span class="dot" aria-hidden="true"></span><strong>Asistente: lo que veo en tu imagen</strong></div>
+        <ol class="asteps" id="agentSteps" hidden></ol>
+        <p class="hint" id="agentStatus"></p>
+        <div id="agentBody" class="agentbody"></div>
+        <div class="toolbar">
+          <button class="btn primary" type="button" id="agentDraw" hidden>Dibujar una versión para bordar</button>
+          <button class="btn small" type="button" id="agentRead" hidden>Volver a leer la imagen</button>
+        </div>
+        <div class="results" id="agentDesigns"></div>
+      </div>
+    </section>
+    <div class="next"><button class="btn primary" type="button" data-go="ajustes">Siguiente: ajustar tamaño →</button></div>
+  </section>
+
+  <!-- 2. Ajustes + cómo se verá -->
+  <section class="panel" id="p-ajustes" role="tabpanel" aria-labelledby="t-ajustes" hidden>
+    <div class="split">
+      <section class="card" aria-labelledby="s2">
+        <div class="step"><b>2</b><h2 id="s2">Ajusta tu bordado</h2></div>
+        <p class="hint" id="designNote" hidden>Este diseño ya viene con su tamaño y sus colores. Solo elige tu tela.</p>
+        <div id="simple" class="group">
+          <p class="lbl">Tamaño</p>
+          <div class="choices" id="sizeChoices"></div>
+          <p class="lbl">Colores de hilo</p>
+          <div class="choices" id="colorChoices"></div>
+        </div>
+        <div class="group sep">
+          <div class="grid2">
+            <div class="field">
+              <label for="count">Tela</label>
+              <select id="count">
+                <option value="11">Aida 11 (cuadros grandes, 3 hebras)</option>
+                <option value="14" selected>Aida 14 (la más común, 2 hebras)</option>
+                <option value="16">Aida 16 (2 hebras)</option>
+                <option value="18">Aida 18 (cuadros finos, 2 hebras)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="fabric">Color de la tela</label>
+              <select id="fabric">
+                <option value="#F7F6F1">Blanca</option>
+                <option value="#EEE4CF">Crudo (beige)</option>
+                <option value="#F4DEDF">Rosa pálido</option>
+                <option value="#DCE6EE">Azul cielo</option>
+                <option value="#232323">Negra</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="bgBlock" class="group sep">
+          <p class="lbl">Fondo de la imagen</p>
+          <div class="bgrow"><span class="sw" id="bgSw"></span><span id="bgName">Sin fondo detectado</span></div>
+          <div class="choices two">
+            <button type="button" class="choice" id="bgRemove"><strong>Quitar el fondo</strong><small>se queda la tela</small></button>
+            <button type="button" class="choice" id="bgKeep"><strong>Bordar el fondo</strong><small>se rellena con hilo</small></button>
+          </div>
+          <label class="check"><input id="detail" type="checkbox" checked><span><b>Cuidar líneas finas.</b> Ayuda a que no se pierdan los contornos delgados.</span></label>
+        </div>
+        <div id="textBlock" class="group sep" hidden>
+          <p class="lbl">Letras de tu imagen</p>
+          <label class="check"><input id="textfix" type="checkbox" checked><span><b>Escribir las letras con abecedario de punto de cruz.</b> Así se leen bien en la tela.</span></label>
+          <div id="textList" style="display:flex;flex-direction:column;gap:14px"></div>
+          <div class="addtext">
+            <p class="lbl">Agregar letras a mano</p>
+            <p class="note">¿Las letras de tu imagen no se leen bien? Escríbelas aquí, escoge dónde van y las borda con letra clara.</p>
+            <label for="newText" class="sr">Texto</label>
+            <input type="text" id="newText" maxlength="40" placeholder="Ej. FELIZ CUMPLEAÑOS" autocomplete="off">
+            <div class="choices" id="newPos"></div>
+            <button class="btn primary" type="button" id="addTextBtn">Agregar letras</button>
+          </div>
+        </div>
+        <details class="more"><summary>Más ajustes</summary>
+          <div class="grid2">
+            <div class="field">
+              <label for="width">Ancho en puntadas <output id="widthOut">70</output></label>
+              <input id="width" type="range" min="20" max="150" step="1" value="70">
+              <p class="note">Más puntadas, más detalle y más trabajo.</p>
+            </div>
+            <div class="field">
+              <label for="colors">Colores de hilo <output id="colorsOut">12</output></label>
+              <input id="colors" type="range" min="2" max="40" step="1" value="12">
+              <p class="note">Menos colores, menos cambios de aguja.</p>
+            </div>
+          </div>
+          <input id="bgoff" type="checkbox" checked hidden>
+          <label class="check"><input id="clean" type="checkbox" checked><span><b>Quitar puntadas sueltas.</b> Evita cuadritos solitarios que obligan a cortar y rematar.</span></label>
+        </details>
+      </section>
+
+      <section class="card preview" id="p-vista" aria-labelledby="vH">
+        <div class="step"><h2 id="vH">Cómo se verá</h2></div>
+        <p class="hint">Así quedaría bordado sobre la tela que elegiste.</p>
+        <canvas id="preview"></canvas>
+        <div class="facts" aria-live="polite">
+          <div><span>Medida bordada</span><strong id="fSize">–</strong></div>
+          <div><span>Corta tela de</span><strong id="fCut">–</strong></div>
+          <div><span>Puntadas</span><strong id="fSt">–</strong></div>
+          <div><span>Madejas</span><strong id="fSk">–</strong></div>
+        </div>
+      </section>
+    </div>
+    <div class="next"><button class="btn primary" type="button" data-go="patron">Siguiente: ver el patrón →</button></div>
+  </section>
+
+  <!-- 3. Patrón -->
+  <section class="panel card" id="p-patron" role="tabpanel" aria-labelledby="t-patron" hidden>
+    <div class="step"><b>3</b><h2>Borda hilo por hilo</h2></div>
+    <div class="guide">
+      <button class="btn" id="prevC" type="button" aria-label="Hilo anterior">◀</button>
+      <div class="gmid" id="gmid" aria-live="polite"></div>
+      <button class="btn primary" id="nextC" type="button" aria-label="Siguiente hilo">▶</button>
+    </div>
+    <div>
+      <p class="lbl" style="margin:0 0 6px">O escoge un hilo</p>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn small" type="button" id="dropColor" hidden>No bordar este color</button>
+      <button class="btn small" type="button" id="restoreColors" hidden>Volver a poner los colores quitados</button>
+    </div>
+    <div class="toolbar viewbar">
+      <div class="seg" role="group" aria-label="Estilo del patrón">
+        <button id="mColor" aria-pressed="true">Color y símbolo</button>
+        <button id="mSym" aria-pressed="false">Solo símbolos</button>
+      </div>
+      <div class="zoom">
+        <button class="btn small" id="zOut" aria-label="Alejar">−</button>
+        <button class="btn small" id="zIn" aria-label="Acercar">+</button>
+        <button class="btn small" id="zFit">Ver completo</button>
+      </div>
+    </div>
+    <div class="chartwrap" id="chartwrap"><canvas id="chart"></canvas></div>
+    <p class="note">Las líneas gruesas marcan cada 10 cuadros. Los triángulos señalan el centro: dobla la tela en cuatro y empieza ahí.</p>
+    <div class="avance">
+      <p class="lbl">Mi avance</p>
+      <div class="markrow">
+        <label class="switch"><input type="checkbox" id="marking"> Modo bordar: toca los cuadritos que ya bordaste</label>
+        <button class="btn small" type="button" id="undoBtn" hidden>Deshacer</button>
+      </div>
+      <div class="progress">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span id="progTxt">0 de 0 puntadas</span><button class="btn small danger" id="resetProg">Borrar avance</button></div>
+        <div class="bar"><i id="progBar"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Hilos -->
+  <section class="panel card" id="p-hilos" role="tabpanel" aria-labelledby="t-hilos" hidden>
+    <div class="step"><b>4</b><h2>Hilos a comprar</h2></div>
+    <p class="hint" id="threadHint"></p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>DMC</th><th class="colname">Color</th><th class="num">Puntadas</th><th class="num">Madejas</th></tr></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="name"></td><td class="num" id="totSt"></td><td class="num" id="totSk"></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="btn primary" id="copyList">Copiar lista para la mercería</button>
+    <textarea id="listText" readonly hidden aria-label="Lista de hilos"></textarea>
+    <p class="note">Los colores DMC son la equivalencia más cercana; en pantalla pueden verse un poco distintos. Lleva la lista a la mercería y compara con la madeja en mano.</p>
+  </section>
+
+  <!-- 5. Imprimir -->
+  <section class="panel card" id="p-hojas" role="tabpanel" aria-labelledby="t-hojas" hidden>
+    <div class="step"><b>5</b><h2>Imprimir el patrón</h2></div>
+    <div class="choices two" role="group" aria-label="Cómo imprimir">
+      <button type="button" class="choice" id="pgOne" aria-pressed="true"><strong>Todo en 1 hoja</strong><small>tamaño carta, con lista de hilos</small></button>
+      <button type="button" class="choice" id="pgMany" aria-pressed="false"><strong>Varias hojas</strong><small>cuadros más grandes</small></button>
+    </div>
+    <label class="check"><input type="checkbox" id="pagesBW"><span>Hojas en blanco y negro (solo símbolos, ahorra tinta)</span></label>
+    <button class="btn primary" type="button" id="pdfBtn">Descargar PDF tamaño carta</button>
+    <p class="hint" id="pgHint">Guarda el PDF y mándalo a imprimir en hoja carta. También puedes mantener el dedo sobre la imagen para guardarla.</p>
+    <p class="note" id="pgNote"></p>
+    <div class="pages" id="pages"></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ---------- Paleta DMC (aproximada en RGB) ----------
+const DMC_RAW = `B5200|Blanco nieve|FFFFFF;White|Blanco|FCFBF8;Ecru|Crudo|F0EADA;3865|Blanco invierno|F9F7F1;310|Negro|000000;762|Gris perla muy claro|ECECEC;415|Gris perla|D3D3D6;318|Gris acero claro|ABABAB;414|Gris acero oscuro|8C8C8C;317|Gris peltre|6C6C6C;413|Gris peltre oscuro|565656;3799|Gris carbón|424242;535|Gris ceniza|636458;648|Beige gris claro|BCB4AC;647|Beige gris medio|B0A69C;646|Beige gris oscuro|877D73;3024|Gris marrón muy claro|EBEAE7;3022|Gris marrón medio|8E9078;
+321|Rojo|C72B3B;666|Rojo brillante|E31D42;304|Rojo medio|B71F33;498|Rojo oscuro|A7132B;815|Granate medio|87071F;814|Granate oscuro|7B001B;902|Granate muy oscuro|822637;817|Coral muy oscuro|BB051F;349|Coral oscuro|D21035;350|Coral medio|E04848;351|Coral|E96A67;352|Coral claro|FD9C97;353|Melocotón|FED7CC;3705|Melón oscuro|FF7992;3706|Melón medio|FFADBC;3708|Melón claro|FFCBD5;3801|Melón muy oscuro|E74967;760|Salmón|F5ADAD;761|Salmón claro|FFC9C9;3712|Salmón medio|F18787;3328|Salmón oscuro|E36D6D;347|Salmón muy oscuro|BF2D2D;3713|Salmón muy claro|FFE2E2;
+600|Rosa cereza muy oscuro|CD2F63;601|Rosa cereza oscuro|D1286A;602|Rosa cereza medio|E24874;603|Rosa cereza|FFA4BE;604|Rosa cereza claro|FFB0BE;605|Rosa cereza muy claro|FFC0CD;3326|Rosa claro|FBADB4;899|Rosa medio|F27688;335|Rosa|EE546E;309|Rosa oscuro|BA4A4A;818|Rosa bebé|FFDFD9;819|Rosa bebé claro|FFEEEB;776|Rosa medio claro|FCB0B9;3716|Rosa muy claro|FFBDBD;962|Rosa viejo medio|E66A86;961|Rosa viejo oscuro|CF7383;3687|Malva|C96B70;3688|Malva medio|E7A9AC;3689|Malva claro|FBBFC2;3685|Malva muy oscuro|881531;224|Rosa concha|EBB7AF;225|Rosa concha muy claro|FFDFD5;3779|Terracota ultra claro|F8CAC8;
+550|Violeta muy oscuro|5C184E;552|Violeta medio|803A6B;553|Violeta|A3638B;554|Violeta claro|DBB3CB;327|Violeta oscuro|633666;208|Lavanda muy oscuro|835B8B;209|Lavanda oscuro|A37BA7;210|Lavanda medio|C39FC3;211|Lavanda claro|E3CBE3;333|Azul violeta muy oscuro|5C5478;3746|Azul violeta oscuro|776B98;340|Azul violeta medio|ADA7C7;917|Ciruela medio|9B1359;718|Ciruela|9C2462;915|Ciruela oscuro|820043;3607|Ciruela claro|C54989;3608|Ciruela muy claro|EA9CC4;3609|Ciruela ultra claro|F4AED5;
+820|Azul rey muy oscuro|0E365C;796|Azul rey oscuro|11416D;797|Azul rey|13477D;798|Azul delft oscuro|4667A6;799|Azul delft medio|748EB6;809|Azul delft|94A8C6;800|Azul delft pálido|C0CCDE;3838|Azul lavanda oscuro|5C7294;3839|Azul lavanda medio|7B8EAB;3840|Azul lavanda claro|B0C0DA;336|Azul marino|253B73;939|Azul marino muy oscuro|1B2853;823|Azul marino oscuro|213063;312|Azul bebé muy oscuro|35668B;322|Azul bebé oscuro|5A8FB8;334|Azul bebé medio|739FC1;3755|Azul bebé|93B4CE;3325|Azul bebé claro|B8D2E6;775|Azul bebé muy claro|D9EBF1;517|Azul wedgwood oscuro|3B768F;3760|Azul wedgwood medio|3E85A2;518|Azul wedgwood claro|4F93A7;519|Azul cielo|7EB1C8;3761|Azul cielo claro|ACD8E2;747|Azul cielo muy claro|E5FCFD;995|Azul eléctrico oscuro|2696B6;3843|Azul eléctrico|14AAD0;996|Azul eléctrico medio|30C2EC;3844|Turquesa brillante oscuro|12AEBA;3845|Turquesa brillante|04C4CA;3846|Turquesa brillante claro|06E3E6;3808|Turquesa ultra oscuro|366970;3810|Turquesa oscuro|488E9A;597|Turquesa|5BA3B3;598|Turquesa claro|90C3CC;3750|Azul antiguo muy oscuro|384C5E;930|Azul antiguo oscuro|455C71;931|Azul antiguo medio|6A859E;932|Azul antiguo claro|A2B5C6;
+890|Verde pistache ultra oscuro|174923;319|Verde pistache muy oscuro|205F2E;367|Verde pistache oscuro|617A52;320|Verde pistache medio|69886A;368|Verde pistache claro|A6C298;369|Verde pistache muy claro|D7EDCC;699|Verde navidad|056517;700|Verde brillante|07731B;701|Verde claro|3F8F29;702|Verde perico|479B32;703|Verde chartreuse|7BB54D;704|Chartreuse brillante|9ECF34;907|Verde loro claro|C7E666;906|Verde loro medio|7FB335;905|Verde loro oscuro|627B24;904|Verde loro muy oscuro|557822;986|Verde bosque muy oscuro|405230;987|Verde bosque oscuro|587141;988|Verde bosque medio|738B5B;989|Verde bosque|8DA675;3346|Verde cazador|406A3A;3347|Verde manzana medio|71935C;3348|Verde manzana claro|CCD9B1;471|Verde aguacate muy claro|AEBF79;470|Verde aguacate claro|94AB4F;469|Verde aguacate|72843C;937|Verde aguacate medio|627133;935|Verde aguacate oscuro|424D2A;3364|Verde pino|83975F;3363|Verde pino medio|728256;3362|Verde pino oscuro|5E6B47;3053|Verde gris|9CA482;3052|Verde gris medio|889268;501|Verde azulado oscuro|396F52;502|Verde azulado|5B9071;503|Verde azulado medio|7BAC94;504|Verde azulado muy claro|C4DECC;561|Jade muy oscuro|2C6A45;562|Jade medio|53976A;563|Jade claro|8FC098;564|Jade muy claro|A7CDAF;909|Esmeralda muy oscuro|156F49;910|Esmeralda oscuro|187E56;911|Esmeralda medio|189065;912|Esmeralda claro|1B9D6B;913|Verde Nilo medio|6DAB77;954|Verde Nilo|88BA91;955|Verde Nilo claro|A2D6AD;3815|Celadón oscuro|477B61;3816|Celadón|65A57D;3817|Celadón claro|99C4AA;3813|Verde azulado claro|B2D4BD;
+3078|Amarillo dorado muy claro|FDF9CD;445|Limón claro|FFFB8B;307|Limón|FDED54;444|Limón oscuro|FFD600;727|Topacio muy claro|FFF1AF;726|Topacio claro|FDD755;725|Topacio medio|FFC840;783|Topacio dorado|CE9124;782|Topacio oscuro|AE7720;780|Topacio ultra oscuro|94631A;745|Amarillo pálido claro|FFE9AD;744|Amarillo pálido|FFE793;743|Amarillo medio|FED376;742|Mandarina clara|FFBF57;741|Mandarina media|FFA32B;740|Mandarina|FF8B00;970|Calabaza claro|F78B13;971|Calabaza|F67F00;947|Naranja quemado|FF7B4D;946|Naranja quemado medio|EB6307;900|Naranja quemado oscuro|D15807;608|Naranja brillante|FD5D35;606|Rojo naranja brillante|FA3203;722|Naranja especia claro|F7976F;721|Naranja especia medio|F27842;720|Naranja especia oscuro|E55C1F;3824|Chabacano claro|FECDC2;3341|Chabacano|FCAB98;3340|Chabacano medio|FF836F;754|Melocotón claro|F7CBBF;948|Melocotón muy claro|FEE7DA;3770|Piel ultra claro|FFEEE3;951|Piel muy claro|FFE2CF;945|Piel claro|FBD5BB;3774|Piel desierto muy claro|F3E1D7;950|Piel desierto claro|EED3C4;3064|Piel desierto|C48E70;407|Piel desierto medio|BB8161;3772|Piel desierto muy oscuro|A06C50;758|Terracota muy claro|EEAA9B;3778|Terracota claro|D98978;356|Terracota medio|C56A5B;355|Terracota oscuro|984436;677|Oro viejo muy claro|F5ECCB;676|Oro viejo claro|E5CE97;729|Oro viejo medio|D0A53E;680|Oro viejo oscuro|BC8D0E;3822|Paja claro|F6DC98;3821|Paja|F3CE75;3820|Paja oscuro|DFB65F;
+3371|Café ébano|1E1108;938|Café ultra oscuro|361F0E;898|Café muy oscuro|492A13;801|Café oscuro|653919;433|Café medio|7A451F;434|Café claro|985E33;435|Café muy claro|B87748;436|Canela|CB9051;437|Canela claro|E4BB8E;738|Canela muy claro|ECCC9E;739|Canela ultra claro|F8E4C8;3862|Moka oscuro|8A6E4E;3863|Moka medio|A4835C;3864|Moka claro|CBB18A;3031|Moka muy oscuro|4B3C2A;3781|Moka gris oscuro|6B5743;839|Beige café oscuro|675541;840|Beige café medio|9A7C5C;841|Beige café claro|B69B7E;842|Beige café muy claro|D1BAA1;3790|Beige gris ultra oscuro|7F6A55;3045|Beige amarillo oscuro|BC966A;3046|Beige amarillo medio|D8BC9A;3047|Beige amarillo claro|E7D6C1;869|Avellana muy oscuro|835E39;420|Avellana oscuro|A07142;422|Avellana claro|C69F7B;300|Caoba muy oscuro|6F2F00;400|Caoba oscuro|8F430F;301|Caoba medio|B35F2B;402|Caoba muy claro|F7A777;975|Café dorado oscuro|914F12;976|Café dorado medio|C28142;977|Café dorado claro|DC9C56;3826|Café dorado|AD7239;3827|Café dorado pálido|F7BB77`;
+
+function hex2rgb(h){return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function rgb2lab(r,g,b){
+  r/=255;g/=255;b/=255;
+  r=r>0.04045?Math.pow((r+0.055)/1.055,2.4):r/12.92;
+  g=g>0.04045?Math.pow((g+0.055)/1.055,2.4):g/12.92;
+  b=b>0.04045?Math.pow((b+0.055)/1.055,2.4):b/12.92;
+  let x=(r*0.4124+g*0.3576+b*0.1805)/0.95047, y=(r*0.2126+g*0.7152+b*0.0722), z=(r*0.0193+g*0.1192+b*0.9505)/1.08883;
+  const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);
+  x=f(x);y=f(y);z=f(z);
+  return [116*y-16,500*(x-y),200*(y-z)];
+}
+const d2=(a,b)=>{const p=a[0]-b[0],q=a[1]-b[1],s=a[2]-b[2];return p*p+q*q+s*s};
+const DMC = DMC_RAW.replace(/\n/g,'').split(';').filter(Boolean).map(s=>{
+  const [code,name,hex]=s.split('|');const rgb=hex2rgb(hex);
+  const lum=(0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2])/255;
+  return {code,name,hex:'#'+hex,rgb,lab:rgb2lab(...rgb),light:lum>0.55};
+});
+const SYMBOLS=['■','●','▲','◆','□','○','△','◇','+','×','/','=','#','%','A','B','C','D','E','F','G','H','K','L','M','N','P','R','S','T','U','V','W','X','Y','Z','2','3','4','5','6','7','8','9','?','&','@','$'];
+
+// ---------- Estado ----------
+const $=id=>document.getElementById(id);
+const S={src:null,cols:50,rows:50,grid:null,pal:[],cell:14,m:30,mode:'color',hi:-1,marking:false,done:new Set(),key:'',tab:'diseno',pagesDirty:true,undo:[],proj:null,fromDesign:false,removed:new Set(),bgHex:null,bgLab:null};
+
+function store(k,v){try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){return null}}
+
+// ---------- Imagen de ejemplo ----------
+function sampleImage(){
+  const c=document.createElement('canvas');c.width=c.height=320;const x=c.getContext('2d');
+  x.fillStyle='#ffffff';x.fillRect(0,0,320,320);
+  // tallos
+  x.strokeStyle='#3F8F29';x.lineWidth=9;x.lineCap='round';
+  [[160,230,160,95],[160,230,95,130],[160,230,228,120]].forEach(([a,b,c2,d])=>{x.beginPath();x.moveTo(a,b);x.quadraticCurveTo((a+c2)/2+ (c2-a)*.1,(b+d)/2,c2,d);x.stroke()});
+  // hojas
+  x.fillStyle='#207A3A';
+  [[130,190,-0.6],[192,182,0.6],[150,150,-0.9],[176,140,0.9]].forEach(([a,b,r])=>{x.save();x.translate(a,b);x.rotate(r);x.beginPath();x.ellipse(0,0,24,10,0,0,Math.PI*2);x.fill();x.restore()});
+  // flores
+  const flower=(cx,cy,rad,petal,center)=>{x.fillStyle=petal;for(let i=0;i<6;i++){const a=i*Math.PI/3;x.beginPath();x.arc(cx+Math.cos(a)*rad*.62,cy+Math.sin(a)*rad*.62,rad*.48,0,Math.PI*2);x.fill()}x.fillStyle=center;x.beginPath();x.arc(cx,cy,rad*.36,0,Math.PI*2);x.fill()};
+  flower(160,88,40,'#E8467A','#FFC83D');
+  flower(92,128,32,'#F2C230','#C2572A');
+  flower(232,118,32,'#8A5BB0','#FFE27A');
+  // maceta
+  x.fillStyle='#B5523B';x.beginPath();x.moveTo(108,236);x.lineTo(212,236);x.lineTo(198,300);x.lineTo(122,300);x.closePath();x.fill();
+  x.fillStyle='#8E3A27';x.fillRect(100,224,120,20);
+  x.fillStyle='#F7D8C8';[[140,268],[160,262],[180,268]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,5,0,Math.PI*2);x.fill()});
+  return c;
+}
+
+// ---------- Procesar imagen ----------
+function downscale(src,w,h){
+  let cw=src.width,ch=src.height,cur=src;
+  while(cw/2>w*1.5){const n=document.createElement('canvas');n.width=Math.max(w,Math.round(cw/2));n.height=Math.max(h,Math.round(ch/2));const nx=n.getContext('2d');nx.imageSmoothingQuality='high';nx.drawImage(cur,0,0,n.width,n.height);cur=n;cw=n.width;ch=n.height}
+  const o=document.createElement('canvas');o.width=w;o.height=h;const ox=o.getContext('2d',{willReadFrequently:true});ox.imageSmoothingQuality='high';ox.drawImage(cur,0,0,w,h);
+  return ox.getImageData(0,0,w,h).data;
+}
+
+function process(){
+  if(!S.src) return;
+  const sw=S.src.naturalWidth||S.src.width, sh=S.src.naturalHeight||S.src.height;
+  let cols=+$('width').value, rows=Math.max(1,Math.round(cols*sh/sw));
+  if(rows>250){rows=250;cols=Math.max(10,Math.round(rows*sw/sh))}
+  const detail=$('detail').checked, f=detail?4:1, SW=cols*f, SH=rows*f, M=SW*SH, N=cols*rows;
+  const data=downscale(S.src,SW,SH);
+  const labs=new Array(M), bg=new Uint8Array(M);
+  for(let i=0;i<M;i++){labs[i]=rgb2lab(data[i*4],data[i*4+1],data[i*4+2]);if(data[i*4+3]<128)bg[i]=1}
+  // color de fondo: el más repetido en las orillas
+  S.bgHex=null;S.bgLab=null;
+  const edge=[];const step=Math.max(1,Math.floor((SW+SH)/80));
+  for(let c=0;c<SW;c+=step){edge.push(c,M-SW+c)}for(let r=0;r<SH;r+=step){edge.push(r*SW,r*SW+SW-1)}
+  const ed=edge.filter(i=>!bg[i]);
+  if(ed.length){let best=-1,bi=ed[0];for(let a=0;a<ed.length;a+=Math.max(1,Math.floor(ed.length/60))){let n=0;for(const b of ed)if(d2(labs[ed[a]],labs[b])<150)n++;if(n>best){best=n;bi=ed[a]}}
+    if(best>=ed.length*0.35){S.bgLab=labs[bi];S.bgHex='#'+[0,1,2].map(k=>data[bi*4+k].toString(16).padStart(2,'0')).join('')}}
+  if($('bgoff').checked&&S.bgLab){
+    // zonas del color del fondo: se quitan las que tocan la orilla y las grandes encerradas (dentro de un círculo, por ejemplo);
+    // las zonas chicas (ojos, huecos de letras) se quedan bordadas
+    const ref=S.bgLab,lab=new Int32Array(M).fill(-1),minArea=M*0.012;
+    for(let s0=0;s0<M;s0++){
+      if(lab[s0]>=0||bg[s0]||d2(labs[s0],ref)>=220)continue;
+      const comp=[s0];lab[s0]=s0;let edgeHit=false;
+      for(let k=0;k<comp.length;k++){const i=comp[k],r=(i/SW)|0,c=i%SW;if(r===0||c===0||r===SH-1||c===SW-1)edgeHit=true;
+        const nb=[c>0?i-1:-1,c<SW-1?i+1:-1,r>0?i-SW:-1,r<SH-1?i+SW:-1];
+        for(const j of nb)if(j>=0&&lab[j]<0&&!bg[j]&&d2(labs[j],ref)<220){lab[j]=s0;comp.push(j)}}
+      if(edgeHit||comp.length>=minArea)for(const i of comp)bg[i]=1;
+    }
+  }
+  const fg=[];for(let i=0;i<M;i++) if(!bg[i]) fg.push(i);
+  const grid=new Int16Array(N).fill(-1);
+  if(!fg.length){S.cols=cols;S.rows=rows;S.grid=grid;S.pal=[];afterProcess();return}
+  // k-means en Lab sobre una muestra
+  const stride=Math.max(1,Math.floor(fg.length/30000)),smp=[];for(let j=0;j<fg.length;j+=stride)smp.push(fg[j]);
+  const K=Math.min(+$('colors').value,smp.length);
+  const centers=[labs[smp[0]].slice()],md=new Float64Array(smp.length).fill(Infinity);
+  while(centers.length<K){const last=centers[centers.length-1];let bi=0,bd=-1;
+    for(let j=0;j<smp.length;j++){const d=d2(labs[smp[j]],last);if(d<md[j])md[j]=d;if(md[j]>bd){bd=md[j];bi=j}}
+    if(bd<=0)break;centers.push(labs[smp[bi]].slice())}
+  for(let it=0;it<10;it++){const sum=centers.map(()=>[0,0,0,0]);
+    for(const i of smp){const L=labs[i];let b=0,bd=Infinity;for(let k=0;k<centers.length;k++){const d=d2(L,centers[k]);if(d<bd){bd=d;b=k}}const s=sum[b];s[0]+=L[0];s[1]+=L[1];s[2]+=L[2];s[3]++}
+    sum.forEach((s,k)=>{if(s[3])centers[k]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]})}
+  const chosen=[],seen=new Set();
+  centers.forEach(c=>{let b=null,bd=Infinity;DMC.forEach(d=>{const x=d2(c,d.lab);if(x<bd){bd=x;b=d}});if(!seen.has(b.code)){seen.add(b.code);chosen.push(b)}});
+  const sub=new Int16Array(M).fill(-1),glob=new Int32Array(chosen.length);
+  for(const i of fg){const L=labs[i];let b=0,bd=Infinity;for(let k=0;k<chosen.length;k++){const d=d2(L,chosen[k].lab);if(d<bd){bd=d;b=k}}sub[i]=b;glob[b]++}
+  // cada cuadrito toma su color; en modo detalle, las líneas finas le ganan al color de relleno
+  let dom=0;for(let k=1;k<chosen.length;k++)if(glob[k]>glob[dom])dom=k;
+  const votes=new Int32Array(chosen.length),ff=f*f,minFg=detail?0.25:0.5;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    votes.fill(0);let n=0;
+    for(let dy=0;dy<f;dy++)for(let dx=0;dx<f;dx++){const v=sub[(r*f+dy)*SW+c*f+dx];if(v>=0){votes[v]++;n++}}
+    if(n/ff<minFg)continue;
+    let best=0;for(let k=1;k<votes.length;k++)if(votes[k]>votes[best])best=k;
+    if(detail&&best===dom){let sec=-1;for(let k=0;k<votes.length;k++)if(k!==dom&&(sec<0||votes[k]>votes[sec]))sec=k;if(sec>=0&&votes[sec]>=ff*0.25)best=sec}
+    grid[r*cols+c]=best;
+  }
+  // colores que mamá decidió no bordar
+  if(S.removed.size)for(let i=0;i<N;i++)if(grid[i]>=0&&S.removed.has(chosen[grid[i]].code))grid[i]=-1;
+  if($('clean').checked){
+    const copy=grid.slice();
+    for(let i=0;i<N;i++){if(copy[i]<0)continue;
+      const r=(i/cols)|0,c=i%cols,v=copy[i];let same=0;const cnt={};
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr<0||cc<0||rr>=rows||cc>=cols)continue;const nb=copy[rr*cols+cc];if(nb===v)same++;else if(nb>=0)cnt[nb]=(cnt[nb]||0)+1}
+      if(!same){let b=-1,bn=0;for(const k in cnt)if(cnt[k]>bn){bn=cnt[k];b=+k}if(b>=0)grid[i]=b}}
+  }
+  applyTexts(grid,chosen,cols,rows);
+  const counts=new Array(chosen.length).fill(0);for(let i=0;i<N;i++)if(grid[i]>=0)counts[grid[i]]++;
+  const order=chosen.map((d,k)=>k).filter(k=>counts[k]>0).sort((a,b)=>counts[b]-counts[a]);
+  const remap=new Int16Array(chosen.length).fill(-1);order.forEach((k,n)=>remap[k]=n);
+  for(let i=0;i<N;i++)if(grid[i]>=0)grid[i]=remap[grid[i]];
+  S.pal=order.map((k,n)=>Object.assign({},chosen[k],{count:counts[k],sym:SYMBOLS[n%SYMBOLS.length]}));
+  S.cols=cols;S.rows=rows;S.grid=grid;
+  afterProcess();
+}
+
+// ---------- Letras rehechas con abecedario de punto de cruz ----------
+// Abecedario de punto de cruz (5 × 7 cuadritos, como los de las revistas)
+const GLYPHS={
+A:['.###.','#...#','#...#','#####','#...#','#...#','#...#'],B:['####.','#...#','#...#','####.','#...#','#...#','####.'],
+C:['.###.','#...#','#....','#....','#....','#...#','.###.'],D:['####.','#...#','#...#','#...#','#...#','#...#','####.'],
+E:['#####','#....','#....','####.','#....','#....','#####'],F:['#####','#....','#....','####.','#....','#....','#....'],
+G:['.###.','#...#','#....','#.###','#...#','#...#','.###.'],H:['#...#','#...#','#...#','#####','#...#','#...#','#...#'],
+I:['###','.#.','.#.','.#.','.#.','.#.','###'],J:['..###','...#.','...#.','...#.','...#.','#..#.','.##..'],
+K:['#...#','#..#.','#.#..','##...','#.#..','#..#.','#...#'],L:['#....','#....','#....','#....','#....','#....','#####'],
+M:['#...#','##.##','#.#.#','#.#.#','#...#','#...#','#...#'],N:['#...#','#...#','##..#','#.#.#','#..##','#...#','#...#'],
+O:['.###.','#...#','#...#','#...#','#...#','#...#','.###.'],P:['####.','#...#','#...#','####.','#....','#....','#....'],
+Q:['.###.','#...#','#...#','#...#','#.#.#','#..#.','.##.#'],R:['####.','#...#','#...#','####.','#.#..','#..#.','#...#'],
+S:['.####','#....','#....','.###.','....#','....#','####.'],T:['#####','..#..','..#..','..#..','..#..','..#..','..#..'],
+U:['#...#','#...#','#...#','#...#','#...#','#...#','.###.'],V:['#...#','#...#','#...#','#...#','#...#','.#.#.','..#..'],
+W:['#...#','#...#','#...#','#.#.#','#.#.#','#.#.#','.#.#.'],X:['#...#','#...#','.#.#.','..#..','.#.#.','#...#','#...#'],
+Y:['#...#','#...#','.#.#.','..#..','..#..','..#..','..#..'],Z:['#####','....#','...#.','..#..','.#...','#....','#####'],
+'0':['.###.','#...#','#..##','#.#.#','##..#','#...#','.###.'],'1':['.#.','##.','.#.','.#.','.#.','.#.','###'],
+'2':['.###.','#...#','....#','...#.','..#..','.#...','#####'],'3':['#####','...#.','..#..','...#.','....#','#...#','.###.'],
+'4':['...#.','..##.','.#.#.','#..#.','#####','...#.','...#.'],'5':['#####','#....','####.','....#','....#','#...#','.###.'],
+'6':['..##.','.#...','#....','####.','#...#','#...#','.###.'],'7':['#####','....#','...#.','..#..','.#...','.#...','.#...'],
+'8':['.###.','#...#','#...#','.###.','#...#','#...#','.###.'],'9':['.###.','#...#','#...#','.####','....#','...#.','.##..'],
+'.':['.','.','.','.','.','.','#'],',':['..','..','..','..','..','.#','#.'],'-':['...','...','...','###','...','...','...'],
+'!':['#','#','#','#','#','.','#'],'?':['.###.','#...#','....#','...#.','..#..','.....','..#..'],
+'&':['.##..','#..#.','#.#..','.#...','#.#.#','#..#.','.##.#'],'/':['....#','...#.','...#.','..#..','.#...','.#...','#....'],
+':':['.','#','.','.','.','#','.'],"'":['#','#','.','.','.','.','.'],'#':['.#.#.','.#.#.','#####','.#.#.','#####','.#.#.','.#.#.']};
+const MARKS={'Á':['A',['..#','.#.']],'É':['E',['..#','.#.']],'Í':['I',['..#','.#.']],'Ó':['O',['..#','.#.']],'Ú':['U',['..#','.#.']],
+  'Ü':['U',['#.#']],'Ñ':['N',['.##.#','#..#.']]};
+function stampGlyph(grid,cols,rows,g,x0,y0,s,ci){
+  const put=(gx,gy)=>{for(let a=0;a<s;a++)for(let b=0;b<s;b++){const X=x0+gx*s+a,Y=y0+gy*s+b;if(X>=0&&Y>=0&&X<cols&&Y<rows)grid[Y*cols+X]=ci}};
+  g.rows.forEach((row,gy)=>{for(let gx=0;gx<row.length;gx++)if(row[gx]==='#')put(gx,gy)});
+  if(g.mark){const mw=g.mark[0].length,off=Math.floor((g.w-mw)/2);g.mark.forEach((row,i)=>{for(let gx=0;gx<row.length;gx++)if(row[gx]==='#')put(off+gx,i-g.mark.length-1)})}
+}
+// Abecedario chico (3 × 5) para textos largos
+const SMALL={A:['.#.','#.#','###','#.#','#.#'],B:['##.','#.#','##.','#.#','##.'],C:['.##','#..','#..','#..','.##'],D:['##.','#.#','#.#','#.#','##.'],
+E:['###','#..','##.','#..','###'],F:['###','#..','##.','#..','#..'],G:['.##','#..','#.#','#.#','.##'],H:['#.#','#.#','###','#.#','#.#'],
+I:['###','.#.','.#.','.#.','###'],J:['..#','..#','..#','#.#','.#.'],K:['#.#','#.#','##.','#.#','#.#'],L:['#..','#..','#..','#..','###'],
+M:['#...#','##.##','#.#.#','#...#','#...#'],N:['#..#','##.#','#.##','#..#','#..#'],O:['.#.','#.#','#.#','#.#','.#.'],P:['##.','#.#','##.','#..','#..'],
+Q:['.#.','#.#','#.#','##.','.##'],R:['##.','#.#','##.','#.#','#.#'],S:['.##','#..','.#.','..#','##.'],T:['###','.#.','.#.','.#.','.#.'],
+U:['#.#','#.#','#.#','#.#','###'],V:['#.#','#.#','#.#','#.#','.#.'],W:['#...#','#...#','#.#.#','#.#.#','.#.#.'],X:['#.#','#.#','.#.','#.#','#.#'],
+Y:['#.#','#.#','.#.','.#.','.#.'],Z:['###','..#','.#.','#..','###'],'0':['###','#.#','#.#','#.#','###'],'1':['.#.','##.','.#.','.#.','###'],
+'2':['##.','..#','.#.','#..','###'],'3':['##.','..#','.#.','..#','##.'],'4':['#.#','#.#','###','..#','..#'],'5':['###','#..','##.','..#','##.'],
+'6':['.##','#..','###','#.#','###'],'7':['###','..#','.#.','.#.','.#.'],'8':['###','#.#','###','#.#','###'],'9':['###','#.#','###','..#','##.'],
+'.':['.','.','.','.','#'],',':['.','.','.','#','#'],'-':['...','...','###','...','...'],'!':['#','#','#','.','#'],'?':['##.','..#','.#.','...','.#.'],
+'&':['.#.','#.#','.#.','#.#','.##'],'/':['..#','..#','.#.','#..','#..'],':':['.','#','.','#','.'],"'":['#','#','.','.','.'],'#':['#.#','###','#.#','###','#.#']};
+const SMARKS={'Á':['A',['.#']],'É':['E',['.#']],'Í':['I',['.#']],'Ó':['O',['.#']],'Ú':['U',['.#']],'Ü':['U',['#.#']],'Ñ':['N',['.##.']]};
+function glyphFor(ch,small){
+  const G=small?SMALL:GLYPHS,MK=small?SMARKS:MARKS,H=small?5:7;
+  if(ch===' ')return {rows:Array(H).fill('..'),w:2,space:true,mark:null};
+  let mark=null;if(MK[ch]){mark=MK[ch][1];ch=MK[ch][0]}
+  const g=G[ch]||G[ch.normalize('NFD').replace(/[̀-ͯ]/g,'')]||G['?'];
+  return {rows:g,w:g[0].length,space:false,mark};
+}
+function textLayout(text,small,s){const gl=[...text].map(c=>glyphFor(c,small));
+  const total=gl.reduce((a,g)=>a+(g.space?(g.w+1)*s:(g.w+1)*s),0)-s;return {gl,total,h:(small?5:7)*s}}
+function textColorIndex(t,chosen,tl){
+  // color elegido por mamá, o uno automático que se vea sobre la tela
+  if(t.code){const d=DMC.find(x=>x.code===t.code);if(d){let i=chosen.findIndex(c=>c.code===d.code);if(i<0){chosen.push(d);i=chosen.length-1}return i}}
+  const fab=rgb2lab(...hex2rgb($('fabric').value.slice(1)));
+  let best=null,bd=Infinity;DMC.forEach(d=>{const z=d2(tl,d.lab);if(z<bd){bd=z;best=d}});
+  if(d2(best.lab,fab)<900){ // casi del color de la tela: se usa el color del diseño que más contrasta
+    let alt=null,ad=-1;chosen.forEach(c=>{if(S.removed.has(c.code))return;const z=d2(c.lab,fab);if(z>ad){ad=z;alt=c}});
+    if(alt&&ad>=900)best=alt;else best=DMC.find(x=>x.code===(fab[0]>50?'310':'B5200'));
+  }
+  // poco contraste con la tela (gris claro sobre blanco, por ejemplo): el mismo tono, más oscuro o más claro
+  if(Math.abs(best.lab[0]-fab[0])<48){const want=fab[0]>50?-1:1,b0=best.lab;let alt=null,ad=Infinity;
+    DMC.forEach(d=>{const dl=(d.lab[0]-fab[0])*want;if(dl<48)return;const z=(d.lab[1]-b0[1])**2+(d.lab[2]-b0[2])**2+0.15*(dl-55)**2;if(z<ad){ad=z;alt=d}});
+    if(alt)best=alt}
+  let i=chosen.findIndex(c=>c.code===best.code);if(i<0){chosen.push(best);i=chosen.length-1}return i;
+}
+function applyTexts(grid,chosen,cols,rows){
+  S.textNotes=[];S.textColors=[];
+  const items=(S.proj&&!S.fromDesign&&S.proj.texts)||[];
+  if(!items.length||!$('textfix').checked)return;
+  items.forEach((t,ti)=>{
+    const text=t.texto.toUpperCase().trim();if(!text){S.textNotes[ti]=null;return}
+    let cx=t.cx*cols,cy=t.cy*rows;const hA=Math.max(3,t.alto*cols);
+    if(t.manual&&!t.colorFixed){const cnt=new Map(),r0=t.radio*cols,hw=t.ancho*cols/2;
+      for(let i=0;i<grid.length;i++){const v=grid[i];if(v<0)continue;const X=i%cols+.5,Y=((i/cols)|0)+.5;let inB;
+        if(t.forma==='recto')inB=Math.abs(Y-cy)<=hA*.9&&Math.abs(X-cx)<=hw;
+        else inB=Math.abs(Math.hypot(X-cx,Y-cy)-r0)<=hA*1.2&&(t.forma==='arco_arriba'?Y<cy:Y>cy);
+        if(inB)cnt.set(v,(cnt.get(v)||0)+1)}
+      const ord=[...cnt.entries()].sort((a,b)=>b[1]-a[1]);
+      // si casi todo es de un color, las letras son ese color sobre la tela; si no, el segundo color
+      const pick=ord.length>1&&ord[1][1]>=ord[0][1]*.12?ord[1][0]:ord.length?ord[0][0]:-1;
+      if(pick>=0){t.color=chosen[pick].hex;t.colorFixed=true}}
+    const tl=rgb2lab(...hex2rgb(t.color.slice(1)));
+    const isText=v=>v>=0&&d2(chosen[v].lab,tl)<700;
+    const like=[];for(let i=0;i<grid.length;i++)if(isText(grid[i]))like.push(i);
+    const isArc=t.forma!=='recto',top=t.forma==='arco_arriba';
+    let r=t.radio*cols;
+    if(isArc&&like.length){ // afina centro y radio contra lo que se ve en la imagen
+      let best={s:-1,cx,cy,r};
+      for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++)for(let rr=r*0.86;rr<=r*1.14;rr+=0.5){
+        let sc=0;for(const i of like){const dx=i%cols+.5-(cx+ox),dy=((i/cols)|0)+.5-(cy+oy);if(top?dy>hA*.5:dy<-hA*.5)continue;if(Math.abs(Math.hypot(dx,dy)-rr)<=hA*.5)sc++}
+        if(sc>best.s)best={s:sc,cx:cx+ox,cy:cy+oy,r:rr}}
+      if(best.s>3){cx=best.cx;cy=best.cy;r=best.r}
+    }
+    const dy=t.dy||0;if(isArc)r=Math.max(6,top?r-dy:r+dy);else cy+=dy;
+    // tamaño: abecedario grande si cabe; si no, el chico
+    const room=isArc?r*1.8:Math.max(t.ancho*cols*1.3,cols*.3);
+    let small=false,s=Math.min(3,Math.max(1,Math.round(hA/7)+(t.ds||0)));
+    let L=textLayout(text,false,s);
+    while(s>1&&L.total>room){s--;L=textLayout(text,false,s)}
+    if((t.ds||0)<0&&s===1||L.total>room){const Ls=textLayout(text,true,1);if(L.total>room||(t.ds||0)<0){small=true;L=Ls}}
+    const h=L.h,total=L.total,half=total/2;
+    // la curva: si el texto es más ancho que el círculo se aplana, conservando la punta
+    const R=isArc?Math.max(r,half/0.85):0;
+    const yAt=dx=>{const sag=R-Math.sqrt(Math.max(0,R*R-dx*dx));return top?(cy-r)+sag:(cy+r)-sag};
+    // borrar letras viejas en la franja
+    const inBand=i=>{const X=i%cols+.5,Y=((i/cols)|0)+.5;
+      if(isArc){const dx=X-cx,d=Math.hypot(dx,Y-cy);
+        if(Math.abs(d-r)<=Math.max(h,hA)*.7&&(top?Y<cy:Y>cy)&&Math.abs(dx)<=Math.max(half,r)+2)return true;
+        return Math.abs(dx)<=half+1&&Math.abs(Y-yAt(dx))<=h*.7}
+      return Math.abs(Y-cy)<=Math.max(h,hA)*.7&&Math.abs(X-cx)<=half+2};
+    const band=[],cnt=new Map();
+    for(let i=0;i<grid.length;i++)if(inBand(i)){band.push(i);const v=grid[i];if(!isText(v))cnt.set(v,(cnt.get(v)||0)+1)}
+    let fill=-1,fb=0;cnt.forEach((n,v)=>{if(n>fb){fb=n;fill=v}});
+    const fillLab=fill>=0?chosen[fill].lab:(S.bgLab||null);
+    const mixed=v=>{if(v<0||v===fill||!fillLab)return false;const p=chosen[v].lab;
+      const ab=[fillLab[0]-tl[0],fillLab[1]-tl[1],fillLab[2]-tl[2]],ap=[p[0]-tl[0],p[1]-tl[1],p[2]-tl[2]];
+      const LL=ab[0]**2+ab[1]**2+ab[2]**2||1,u=Math.max(0,Math.min(1,(ap[0]*ab[0]+ap[1]*ab[1]+ap[2]*ab[2])/LL));
+      return d2(p,[tl[0]+ab[0]*u,tl[1]+ab[1]*u,tl[2]+ab[2]*u])<220};
+    for(const i of band){const v=grid[i];if(isText(v)||mixed(v))grid[i]=fill}
+    // letras nuevas, todas derechas y de izquierda a derecha
+    const ci=textColorIndex(t,chosen,tl);
+    let pos=-half;
+    L.gl.forEach(g=>{const gw=g.w*s,mid=pos+gw/2;pos+=(g.w+1)*s;if(g.space)return;
+      const py=isArc?yAt(mid):cy;
+      stampGlyph(grid,cols,rows,g,Math.round(cx+mid-gw/2),Math.round(py-h/2),s,ci)});
+    S.textNotes[ti]={h,small};S.textColors[ti]=chosen[ci].code;
+  });
+}
+function renderTexts(){
+  const items=(S.proj&&!S.fromDesign&&S.proj.texts)||[];
+  $('textBlock').hidden=!(S.proj&&!S.fromDesign);const box=$('textList');
+  if(!items.length){box.innerHTML='';return}
+  if(box.dataset.for!==S.proj.id||box.children.length!==items.length){
+    box.innerHTML='';box.dataset.for=S.proj.id;
+    items.forEach((t,i)=>{
+      const it=document.createElement('div');it.className='titem';
+      const inp=document.createElement('input');inp.type='text';inp.value=t.texto;inp.id='txt'+i;inp.setAttribute('aria-label','Texto '+(i+1));
+      let tm;inp.oninput=()=>{t.texto=inp.value.slice(0,40);clearTimeout(tm);tm=setTimeout(()=>{process()},500)};
+      const note=document.createElement('p');note.className='note';note.id='tnote'+i;
+      const btns=document.createElement('div');btns.className='tbtns';
+      [['A+ Más grandes',()=>t.ds=(t.ds||0)+1],['A− Más chicas',()=>t.ds=(t.ds||0)-1],['↑ Subir',()=>t.dy=(t.dy||0)-1],['↓ Bajar',()=>t.dy=(t.dy||0)+1],['✕ Quitar',()=>{items.splice(items.indexOf(t),1);box.dataset.for=''}]].forEach(([lb,fn])=>{
+        const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=lb;b.onclick=()=>{fn();process()};btns.appendChild(b)});
+      const tc=document.createElement('div');tc.className='chips';tc.id='tcol'+i;tc.style.alignItems='center';
+      it.append(inp,tc,note,btns);box.appendChild(it)});
+  }
+  items.forEach((t,i)=>{const n=$('tnote'+i);if(!n)return;const info=S.textNotes&&S.textNotes[i];
+    n.textContent=!$('textfix').checked||!info?'':`Letras de ${info.h} cuadritos de alto${info.small?', con abecedario chico para que quepan':''}. Si algo está mal escrito, corrígelo arriba.`;
+    const box=$('tcol'+i);if(!box)return;box.innerHTML='';box.hidden=!$('textfix').checked;
+    const lab=document.createElement('span');lab.className='note';lab.textContent='Color:';box.appendChild(lab);
+    const opts=[{code:'',hex:null,name:'Automático'}];
+    const seen=new Set();[...S.pal.map(p=>p.code),'310','B5200','321'].forEach(c=>{if(seen.has(c)||opts.length>8)return;seen.add(c);const d=DMC.find(x=>x.code===c);if(d)opts.push({code:d.code,hex:d.hex,name:d.name,light:d.light})});
+    opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.className='chip';
+      const on=(t.code||'')===o.code;b.setAttribute('aria-pressed',String(on));
+      if(o.hex){const sw=document.createElement('span');sw.className='sw';sw.style.background=o.hex;b.appendChild(sw);b.append(o.code)}
+      else{b.style.paddingLeft='12px';b.textContent='Automático'+(on&&S.textColors&&S.textColors[i]?` (${S.textColors[i]})`:'')}
+      b.setAttribute('aria-label',o.hex?`Letras en DMC ${o.code} ${o.name}`:'Color automático');
+      b.onclick=()=>{t.code=o.code;process()};box.appendChild(b)});
+  });
+}
+$('textfix').onchange=()=>{process();saveSoon()};
+const TPOS=[['Curva arriba','en círculo',{forma:'arco_arriba',cx:.5,cy:.5,radio:.35}],['Curva abajo','en círculo',{forma:'arco_abajo',cx:.5,cy:.5,radio:.35}],
+  ['Renglón arriba','derecho',{forma:'recto',cx:.5,cy:.12}],['Renglón en medio','derecho',{forma:'recto',cx:.5,cy:.5}],['Renglón abajo','derecho',{forma:'recto',cx:.5,cy:.88}]];
+let newPos=0;
+function renderNewPos(){const el=$('newPos');el.innerHTML='';TPOS.forEach(([t,sub],i)=>{const b=mkChoice(t,sub,i===newPos);b.onclick=()=>{newPos=i;renderNewPos()};el.appendChild(b)})}
+$('addTextBtn').onclick=()=>{const v=$('newText').value.trim();if(!v){$('newText').focus();toast('Escribe primero las letras');return}
+  if(!S.proj)return;S.proj.texts=S.proj.texts||[];
+  S.proj.texts.push(Object.assign({texto:v.slice(0,40),radio:.35,alto:.07,ancho:.7,color:'#808080',ds:0,dy:0,manual:true},TPOS[newPos][2]));
+  // que quepan las letras grandes
+  const n=[...v].length,t=TPOS[newPos][2],room=t.forma==='recto'?.9:.35*1.8,w=Math.min(150,Math.max(+$('width').value,Math.ceil(n*6/room),Math.ceil(8/.07)));
+  $('width').value=w;$('widthOut').textContent=w;$('textfix').checked=true;$('newText').value='';process();saveSoon();toast('Letras agregadas. Revisa cómo se ven a la derecha.')};
+
+function hashGrid(){let h=2166136261;h^=S.cols;for(let i=0;i<S.grid.length;i++){h^=(S.grid[i]+2)*(S.pal[S.grid[i]]?parseInt(S.pal[S.grid[i]].code)||7:1);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+
+function afterProcess(){
+  S.hi=-1;S.key='hilo-'+hashGrid();
+  S.done=new Set();const saved=store(S.key);if(saved){try{JSON.parse(saved).forEach(i=>S.done.add(i))}catch(e){}}
+  S.undo=[];fitCell(true);renderFacts();renderChips();drawScreen();centerChart();renderThreads();S.pagesDirty=true;updateSimple();renderTexts();saveCurrent();
+  if(S.tab==='ajustes')drawPreview();if(S.tab==='hojas')buildPages();
+}
+
+// ---------- Cálculos de costurera ----------
+function strands(){return +$('count').value<=11?3:2}
+function skeinsFor(n){const ct=+$('count').value,cell=2.54/ct,per=cell*(2*Math.SQRT2+2)*1.35,usable=800*(6/strands());return Math.max(1,Math.ceil(n*per/usable))}
+const fmt=n=>n.toLocaleString('es-MX');
+function totalStitches(){return S.pal.reduce((a,p)=>a+p.count,0)}
+function renderFacts(){
+  const ct=+$('count').value,w=S.cols/ct*2.54,h=S.rows/ct*2.54;
+  $('fSize').textContent=`${w.toFixed(1)} × ${h.toFixed(1)} cm`;
+  $('fCut').textContent=`${Math.ceil(w+14)} × ${Math.ceil(h+14)} cm`;
+  $('fSt').textContent=`${fmt(totalStitches())} · ${S.cols}×${S.rows}`;
+  $('fSk').textContent=`${S.pal.reduce((a,p)=>a+skeinsFor(p.count),0)} de ${S.pal.length} colores`;
+}
+
+// ---------- Dibujo del patrón ----------
+function drawChart(ctx,o){
+  const {x0,y0,w,h,cell,m,mode,hi,done}=o;
+  const W=w*cell+m*2,H=h*cell+m*2;
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+  const showSym=cell>=10;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=`700 ${Math.round(cell*.62)}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  for(let r=0;r<h;r++)for(let c=0;c<w;c++){
+    const i=(y0+r)*S.cols+(x0+c),p=S.grid[i];if(p<0)continue;
+    const col=S.pal[p],x=m+c*cell,y=m+r*cell,dim=hi>=0&&p!==hi;
+    if(done&&done.has(i)){
+      ctx.fillStyle='#EEF0F3';ctx.fillRect(x,y,cell,cell);
+      ctx.globalAlpha=dim?.25:1;ctx.strokeStyle=col.hex;ctx.lineWidth=Math.max(1.5,cell*.22);ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(x+cell*.22,y+cell*.22);ctx.lineTo(x+cell*.78,y+cell*.78);ctx.moveTo(x+cell*.78,y+cell*.22);ctx.lineTo(x+cell*.22,y+cell*.78);ctx.stroke();ctx.globalAlpha=1;continue;
+    }
+    if(mode==='color'){
+      ctx.globalAlpha=dim?.14:1;ctx.fillStyle=col.hex;ctx.fillRect(x,y,cell,cell);ctx.globalAlpha=1;
+      if(showSym&&!dim){ctx.fillStyle=col.light?'#111':'#fff';ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
+    }else{
+      if(showSym){ctx.fillStyle=dim?'#CDD0D6':'#111';ctx.fillText(col.sym,x+cell/2,y+cell/2+1)}
+      else{ctx.fillStyle=dim?'#EEE':'#888';ctx.fillRect(x+1,y+1,cell-2,cell-2)}
+    }
+  }
+  // cuadrícula fina
+  if(cell>=5){ctx.strokeStyle='#C6CAD3';ctx.lineWidth=1;ctx.beginPath();
+    for(let c=0;c<=w;c++){if((x0+c)%10===0)continue;const X=Math.round(m+c*cell)+.5;ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
+    for(let r=0;r<=h;r++){if((y0+r)%10===0)continue;const Y=Math.round(m+r*cell)+.5;ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}ctx.stroke()}
+  // cada 10
+  ctx.strokeStyle='#262B36';ctx.lineWidth=Math.max(1.5,cell/7);ctx.beginPath();
+  for(let c=0;c<=w;c++){if((x0+c)%10&&c!==0&&c!==w)continue;const X=m+c*cell;ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
+  for(let r=0;r<=h;r++){if((y0+r)%10&&r!==0&&r!==h)continue;const Y=m+r*cell;ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}ctx.stroke();
+  // números
+  ctx.fillStyle='#4A5162';ctx.font=`700 ${o.num||Math.max(10,Math.min(13,m*.42))}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  for(let c=1;c<=w;c++)if((x0+c)%10===0)ctx.fillText(String(x0+c),m+c*cell,m*.38);
+  ctx.save();for(let r=1;r<=h;r++)if((y0+r)%10===0){ctx.textAlign='right';ctx.fillText(String(y0+r),m-4,m+r*cell)}ctx.restore();
+  // flechas al centro
+  ctx.fillStyle='#C72B3B';const t=Math.min(o.num?14:9,m*.3);
+  const cx=S.cols/2-x0;if(cx>=0&&cx<=w){const X=m+cx*cell;[[m-2,1],[m+h*cell+2,-1]].forEach(([Y,d])=>{ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(X-t,Y-d*t*1.4);ctx.lineTo(X+t,Y-d*t*1.4);ctx.closePath();ctx.fill()})}
+  const cy=S.rows/2-y0;if(cy>=0&&cy<=h){const Y=m+cy*cell;[[m-2,1],[m+w*cell+2,-1]].forEach(([X,d])=>{ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(X-d*t*1.4,Y-t);ctx.lineTo(X-d*t*1.4,Y+t);ctx.closePath();ctx.fill()})}
+}
+
+function maxCell(){return Math.max(4,Math.min(32,Math.floor(3800/Math.max(S.cols,S.rows))))}
+function fitCell(initial){
+  // si el patrón está escondido en otra pantalla, se acomoda al abrirlo
+  const cw=$('chartwrap').clientWidth;S.fitPending=!cw;if(!cw)return;
+  const avail=cw-2*S.m-2;
+  const fit=Math.max(4,Math.floor(avail/S.cols));
+  const base=document.body.classList.contains('big')?18:14;
+  S.cell=initial?Math.min(maxCell(),fit>=base-3?fit:base):Math.min(maxCell(),fit);
+}
+function drawScreen(){
+  const cv=$('chart');if(!S.grid)return;
+  const W=S.cols*S.cell+2*S.m,H=S.rows*S.cell+2*S.m;
+  const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2,4096/Math.max(W,H)));
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done});
+  renderProgress();
+}
+function centerChart(){const w=$('chartwrap');w.scrollLeft=Math.max(0,(w.scrollWidth-w.clientWidth)/2);w.scrollTop=Math.max(0,(w.scrollHeight-w.clientHeight)/2)}
+function renderProgress(){
+  const tot=totalStitches();let n=0;S.done.forEach(i=>{if(S.grid[i]>=0)n++});
+  const pct=tot?Math.round(n/tot*100):0;
+  $('progTxt').textContent=`${fmt(n)} de ${fmt(tot)} puntadas bordadas (${pct}%)`;
+  $('progBar').style.width=pct+'%';
+  renderGuide();
+}
+function renderChips(){
+  const el=$('chips');el.innerHTML='';
+  const mk=(label,idx,p)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',String(S.hi===idx));
+    b.innerHTML=p?`<span class="sw" style="background:${p.hex};color:${p.light?'#111':'#fff'}">${p.sym}</span>${p.code}`:`<span class="sw" style="background:conic-gradient(#C72B3B,#FFC840,#3F8F29,#13477D,#C72B3B)"></span>${label}`;
+    b.onclick=()=>{S.hi=idx;renderChips();drawScreen()};el.appendChild(b)};
+  mk('Todos',-1,null);S.pal.forEach((p,i)=>mk('',i,p));
+}
+
+$('chart').addEventListener('click',e=>{
+  if(!S.grid)return;const r=$('chart').getBoundingClientRect();
+  const c=Math.floor((e.clientX-r.left-S.m)/S.cell),rw=Math.floor((e.clientY-r.top-S.m)/S.cell);
+  if(c<0||rw<0||c>=S.cols||rw>=S.rows)return;const i=rw*S.cols+c;if(S.grid[i]<0)return;
+  if(S.marking){S.done.has(i)?S.done.delete(i):S.done.add(i);S.undo.push(i);if(S.undo.length>300)S.undo.shift();store(S.key,JSON.stringify([...S.done]));saveSoon();}
+  else{S.hi=S.hi===S.grid[i]?-1:S.grid[i];renderChips()}
+  drawScreen();
+});
+
+// ---------- Vista bordada ----------
+function shade(hex,f){const [r,g,b]=hex2rgb(hex.slice(1));const t=f<0?0:255,p=Math.abs(f);return `rgb(${Math.round((t-r)*p+r)},${Math.round((t-g)*p+g)},${Math.round((t-b)*p+b)})`}
+function drawPreview(){
+  const cv=$('preview');if(!S.grid)return;
+  const maxW=Math.min($('p-vista').clientWidth-36,760);
+  const s=Math.max(3,Math.floor(maxW/(S.cols+6)));const pad=s*3;
+  const W=S.cols*s+pad*2,H=S.rows*s+pad*2,dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
+  const fab=$('fabric').value;x.fillStyle=fab;x.fillRect(0,0,W,H);
+  const dark=fab==='#232323';
+  if(s>=5){x.fillStyle=dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.09)';for(let r=0;r<=S.rows+6;r++)for(let c=0;c<=S.cols+6;c++)x.fillRect(c*s-1,r*s-1,2,2)}
+  x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
+  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){
+    const p=S.grid[r*S.cols+c];if(p<0)continue;const hx=S.pal[p].hex,X=pad+c*s,Y=pad+r*s,q=s*.14;
+    x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
+    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke();
+  }
+}
+
+// ---------- Hilos ----------
+function listText(){
+  const ct=+$('count').value,w=S.cols/ct*2.54,h=S.rows/ct*2.54;
+  let t=`Hilos DMC para mi bordado (Hilo a Hilo)\nTela: Aida ${ct}, cortar ${Math.ceil(w+14)} × ${Math.ceil(h+14)} cm\nBordar con ${strands()} hebras\n\n`;
+  S.pal.forEach(p=>t+=`• DMC ${p.code} ${p.name}: ${skeinsFor(p.count)} madeja${skeinsFor(p.count)>1?'s':''}\n`);
+  t+=`\nTotal: ${S.pal.reduce((a,p)=>a+skeinsFor(p.count),0)} madejas`;return t;
+}
+function renderThreads(){
+  const tb=$('tbody');tb.innerHTML='';
+  S.pal.forEach(p=>{const tr=document.createElement('tr');const k=skeinsFor(p.count);
+    tr.innerHTML=`<td><span class="sw" style="background:${p.hex};color:${p.light?'#111':'#fff'}">${p.sym}</span></td><td class="code">${p.code}<span class="cname">${p.name}</span></td><td class="name">${p.name}</td><td class="num">${fmt(p.count)}</td><td class="num">${k}</td>`;tb.appendChild(tr)});
+  $('totSt').textContent=fmt(totalStitches());$('totSk').textContent=S.pal.reduce((a,p)=>a+skeinsFor(p.count),0);
+  $('threadHint').textContent=`Cálculo para Aida ${$('count').value} bordando con ${strands()} hebras. Cada madeja DMC trae 8 m de 6 hebras; ya incluye un poco de sobrante para rematar.`;
+  $('listText').value=listText();
+}
+$('copyList').onclick=()=>{
+  const t=listText();const ta=$('listText');ta.value=t;
+  const fallback=()=>{ta.hidden=false;ta.focus();ta.select();toast('Selecciona y copia el texto')};
+  try{navigator.clipboard.writeText(t).then(()=>toast('Lista copiada'),fallback)}catch(e){fallback()}
+};
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+// ---------- Hojas ----------
+function buildPages(){
+  if(!S.pagesDirty)return;S.pagesDirty=false;
+  const el=$('pages');el.innerHTML='';S.pageCanvases=[];if(!S.grid)return;
+  if(S.pageMode!=='many'){
+    const {cv,mm}=letterSheet();addPage(cv,'Patrón completo en una hoja carta');
+    $('pgNote').textContent=mm<2.2?`Cada cuadrito sale de ${mm.toFixed(1)} mm, algo chico. Si te cuesta verlo, usa "Varias hojas".`:`Cada cuadrito mide ${mm.toFixed(1)} mm en la hoja.`;
+    return;
+  }
+  $('pgNote').textContent='Cada hoja trae 40 × 50 cuadros. La última hoja tiene la lista de hilos.';
+  const PW=40,PH=50,cell=20,m=34,top=56,bw=$('pagesBW').checked;
+  const nx=Math.ceil(S.cols/PW),ny=Math.ceil(S.rows/PH),total=nx*ny+1;let n=0;
+  for(let py=0;py<ny;py++)for(let px=0;px<nx;px++){
+    n++;const x0=px*PW,y0=py*PH,w=Math.min(PW,S.cols-x0),h=Math.min(PH,S.rows-y0);
+    const cv=document.createElement('canvas');cv.width=w*cell+2*m;cv.height=h*cell+2*m+top;const x=cv.getContext('2d');
+    x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);
+    x.fillStyle='#111';x.font='700 18px "Atkinson Hyperlegible", system-ui, sans-serif';x.textBaseline='middle';
+    x.fillText(`Hoja ${n} de ${total}`,m,20);x.font='400 14px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillStyle='#555';
+    x.fillText(`Columnas ${x0+1}–${x0+w} · Filas ${y0+1}–${y0+h}`,m,42);
+    x.save();x.translate(0,top);drawChart(x,{x0,y0,w,h,cell,m,mode:bw?'sym':'color',hi:-1,done:null});x.restore();
+    addPage(cv,`Hoja ${n}: columnas ${x0+1}–${x0+w}, filas ${y0+1}–${y0+h}`);
+  }
+  // hoja de hilos
+  const rowH=34,cv=document.createElement('canvas');cv.width=700;cv.height=110+S.pal.length*rowH+30;const x=cv.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.textBaseline='middle';x.fillStyle='#111';
+  x.font='700 20px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillText(`Hoja ${total} de ${total} · Hilos`,30,28);
+  x.font='400 15px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillStyle='#555';
+  x.fillText(`Aida ${$('count').value} · ${strands()} hebras · ${S.cols} × ${S.rows} puntadas`,30,56);
+  x.font='700 13px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillText('SÍMBOLO      DMC        COLOR',30,88);x.textAlign='right';x.fillText('PUNTADAS   MADEJAS',670,88);x.textAlign='left';
+  S.pal.forEach((p,i)=>{const Y=110+i*rowH+rowH/2;
+    x.fillStyle=bw?'#fff':p.hex;x.fillRect(30,Y-12,24,24);x.strokeStyle='#999';x.strokeRect(30.5,Y-11.5,23,23);
+    x.fillStyle=bw||p.light?'#111':'#fff';x.font='700 15px "Atkinson Hyperlegible", system-ui, sans-serif';x.textAlign='center';x.fillText(p.sym,42,Y+1);
+    x.textAlign='left';x.fillStyle='#111';x.fillText(p.code,108,Y);x.font='400 15px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillText(p.name,190,Y);
+    x.textAlign='right';x.fillText(fmt(p.count),560,Y);x.fillText(String(skeinsFor(p.count)),670,Y);x.textAlign='left';
+    x.strokeStyle='#E2E4E9';x.beginPath();x.moveTo(30,Y+rowH/2);x.lineTo(670,Y+rowH/2);x.stroke()});
+  addPage(cv,'Lista de hilos con símbolos');
+  function addPage(cv,cap){S.pageCanvases.push(cv);const f=document.createElement('figure');const img=new Image();img.src=cv.toDataURL('image/png');img.alt=cap;const fc=document.createElement('figcaption');fc.textContent=cap;f.append(img,fc);el.appendChild(f)}
+}
+
+// ---------- Hoja carta (8.5 × 11 in a 200 puntos por pulgada) ----------
+function letterSheet(){
+  const DPI=200,land=S.cols>S.rows*1.15,W=land?2200:1700,H=land?1700:2200,M=80,bw=$('pagesBW').checked;
+  const ct=+$('count').value,wcm=(S.cols/ct*2.54).toFixed(1),hcm=(S.rows/ct*2.54).toFixed(1);
+  const lcols=land?4:3,lrow=44,nrows=Math.ceil(S.pal.length/lcols),legendH=56+nrows*lrow,headH=100,m=44;
+  const availW=W-2*M,availH=H-2*M-headH-legendH-16;
+  const cell=Math.max(3,Math.min(40,Math.floor(Math.min((availW-2*m)/S.cols,(availH-2*m)/S.rows))));
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);x.textBaseline='middle';x.textAlign='left';
+  const F='"Atkinson Hyperlegible", system-ui, sans-serif';
+  x.fillStyle='#111';x.font=`700 46px ${F}`;x.fillText((S.proj&&S.proj.name)||'Mi bordado',M,M+26);
+  x.fillStyle='#555';x.font=`400 26px ${F}`;
+  x.fillText(`${S.cols} × ${S.rows} puntadas · Aida ${ct} · ${wcm} × ${hcm} cm · ${strands()} hebras`,M,M+72);
+  const chartW=S.cols*cell+2*m,chartH=S.rows*cell+2*m;
+  x.save();x.translate(Math.round((W-chartW)/2),M+headH);
+  drawChart(x,{x0:0,y0:0,w:S.cols,h:S.rows,cell,m,mode:bw?'sym':'color',hi:-1,done:null,num:22});x.restore();
+  // lista de hilos
+  let y=M+headH+chartH+16;x.fillStyle='#111';x.font=`700 28px ${F}`;x.fillText('Hilos DMC',M,y+20);y+=56;
+  const colW=availW/lcols;
+  S.pal.forEach((p,i)=>{
+    const cx=M+(i%lcols)*colW,cy=y+Math.floor(i/lcols)*lrow;
+    x.fillStyle=bw?'#fff':p.hex;x.fillRect(cx,cy,32,32);x.strokeStyle='#888';x.lineWidth=1.5;x.strokeRect(cx+.5,cy+.5,31,31);
+    x.fillStyle=bw||p.light?'#111':'#fff';x.font=`700 22px ${F}`;x.textAlign='center';x.fillText(p.sym,cx+16,cy+17);x.textAlign='left';
+    x.fillStyle='#111';const k=skeinsFor(p.count);let t=`${p.code} ${p.name}`;x.font=`400 21px ${F}`;
+    const tail=` · ${k} mad.`,max=colW-52-x.measureText(tail).width;
+    while(t.length>3&&x.measureText(t).width>max)t=t.slice(0,-1);if(t!==`${p.code} ${p.name}`)t=t.trimEnd()+'…';
+    x.fillText(t+tail,cx+42,cy+17)});
+  return {cv,mm:cell/DPI*25.4};
+}
+const downloadsP=(window.claude&&window.claude.use)?window.claude.use('downloads').catch(()=>null):Promise.resolve(null);
+$('pgHint').textContent='Toca el botón para descargar el PDF y mándalo a imprimir en hoja carta. También puedes mantener el dedo sobre la imagen para guardarla.';
+$('pdfBtn').onclick=async()=>{
+  const dl=await downloadsP;
+  if(!window.jspdf){toast('No se pudo preparar el PDF. Revisa tu conexión.');return}
+  buildPages();if(!S.pageCanvases||!S.pageCanvases.length)return;
+  const b=$('pdfBtn');b.disabled=true;b.textContent='Preparando PDF…';
+  try{
+    const {jsPDF}=window.jspdf;let doc=null;
+    S.pageCanvases.forEach(cv=>{
+      const land=cv.width>cv.height,pw=land?11:8.5,ph=land?8.5:11;
+      if(!doc)doc=new jsPDF({orientation:land?'landscape':'portrait',unit:'in',format:'letter'});else doc.addPage('letter',land?'landscape':'portrait');
+      const exact=Math.abs(cv.width/cv.height-pw/ph)<0.01,mg=exact?0:0.4,k=Math.min((pw-2*mg)/cv.width,(ph-2*mg)/cv.height),w=cv.width*k,h=cv.height*k;
+      doc.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(pw-w)/2,(ph-h)/2,w,h);
+    });
+    const name=((S.proj&&S.proj.name)||'mi-bordado').replace(/[^\wáéíóúñü -]/gi,'').trim()||'mi-bordado';
+    const fname=`Patrón ${name}.pdf`;
+    // descarga normal del navegador (fuera de Claude o si Claude no deja guardar)
+    const direct=()=>{const url=URL.createObjectURL(doc.output('blob'));const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('PDF descargado. Ya lo puedes imprimir.')};
+    if(!dl)direct();
+    else{try{const r=await dl.save({filename:fname,data:doc.output('arraybuffer')});if(r&&r.status==='saved')toast('PDF guardado. Ya lo puedes imprimir.')}
+      catch(e){const c=e&&e.code||'';if(/declin|cancel|denied/.test(c))return;direct()}}
+  }catch(e){toast('No se pudo preparar el PDF.')}
+  finally{b.disabled=false;b.textContent='Descargar PDF tamaño carta'}
+};
+S.pageMode='one';
+function setPageMode(mode){S.pageMode=mode;$('pgOne').setAttribute('aria-pressed',String(mode==='one'));$('pgMany').setAttribute('aria-pressed',String(mode==='many'));S.pagesDirty=true;buildPages()}
+$('pgOne').onclick=()=>setPageMode('one');$('pgMany').onclick=()=>setPageMode('many');
+
+// ---------- Controles ----------
+let tmr;function schedule(){clearTimeout(tmr);tmr=setTimeout(process,140)}
+$('width').oninput=e=>{$('widthOut').textContent=e.target.value;schedule()};
+$('colors').oninput=e=>{$('colorsOut').textContent=e.target.value;schedule()};
+$('bgoff').onchange=schedule;$('clean').onchange=schedule;
+$('count').onchange=()=>{renderFacts();renderThreads();updateSimple();saveSoon();S.pagesDirty=true;if(S.tab==='hojas')buildPages()};
+$('fabric').onchange=()=>{if(S.tab==='ajustes')drawPreview();saveSoon()};
+$('pagesBW').onchange=()=>{S.pagesDirty=true;buildPages()};
+$('mColor').onclick=()=>{S.mode='color';$('mColor').setAttribute('aria-pressed','true');$('mSym').setAttribute('aria-pressed','false');drawScreen()};
+$('mSym').onclick=()=>{S.mode='sym';$('mSym').setAttribute('aria-pressed','true');$('mColor').setAttribute('aria-pressed','false');drawScreen()};
+$('zIn').onclick=()=>{S.cell=Math.min(maxCell(),S.cell+3);drawScreen()};
+$('zOut').onclick=()=>{S.cell=Math.max(4,S.cell-3);drawScreen()};
+$('zFit').onclick=()=>{fitCell(false);drawScreen();centerChart()};
+let wake=null;
+$('marking').onchange=e=>{S.marking=e.target.checked;$('undoBtn').hidden=!S.marking;
+  if(S.marking){toast('Toca cada cuadrito que ya bordaste');try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wake=w}).catch(()=>{})}catch(err){}}
+  else if(wake){wake.release().catch(()=>{});wake=null}};
+$('undoBtn').onclick=()=>{const i=S.undo.pop();if(i===undefined){toast('No hay nada que deshacer');return}
+  S.done.has(i)?S.done.delete(i):S.done.add(i);store(S.key,JSON.stringify([...S.done]));drawScreen();saveSoon()};
+let armed=false;$('resetProg').onclick=()=>{const b=$('resetProg');
+  if(!armed){armed=true;b.textContent='¿Seguro? Toca otra vez';setTimeout(()=>{armed=false;b.textContent='Borrar avance'},3000);return}
+  armed=false;b.textContent='Borrar avance';S.done.clear();S.undo=[];store(S.key,'[]');drawScreen();saveSoon();toast('Avance borrado')};
+// ---------- Menú: una pantalla a la vez ----------
+const PANELS=['diseno','ajustes','patron','hilos','hojas'];
+function go(tab,keepScroll){
+  S.tab=tab;document.querySelectorAll('.menu button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.tab===tab)));
+  PANELS.forEach(t=>$('p-'+t).hidden=t!==tab);
+  if(tab==='ajustes')drawPreview();if(tab==='hojas')buildPages();
+  if(tab==='patron'&&S.fitPending&&S.grid){fitCell(true);drawScreen();centerChart()}
+  if(!keepScroll)window.scrollTo(0,0);
+}
+document.querySelectorAll('.menu button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+$('mineBtn').onclick=()=>{go('diseno');$('mine').scrollIntoView({block:'start'})};
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{const img=new Image();img.onload=()=>{
+      // se guarda una copia pequeña para poder retomar el bordado después
+      const k=Math.min(1,600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));
+      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+      const url=c.toDataURL('image/jpeg',0.85),im=new Image();
+      // copia grande solo en memoria, para que el asistente lea bien las letras
+      const kh=Math.min(1,1600/Math.max(img.width,img.height)),hi=document.createElement('canvas');hi.width=Math.max(1,Math.round(img.width*kh));hi.height=Math.max(1,Math.round(img.height*kh));
+      const hx=hi.getContext('2d');hx.fillStyle='#fff';hx.fillRect(0,0,hi.width,hi.height);hx.imageSmoothingQuality='high';hx.drawImage(img,0,0,hi.width,hi.height);
+      im.onload=()=>{let name=f.name.replace(/\.[^.]+$/,'').slice(0,40);
+        const generic=!name||/^[0-9a-f-]{16,}$/i.test(name)||/^(img|dsc|pxl|image|photo|foto|screenshot|captura|whatsapp)/i.test(name);if(generic)name='Mi foto';
+        S.src=im;S.hiRes=hi;S.fromDesign=false;S.removed=new Set();$('detail').checked=true;$('bgoff').checked=true;
+        S.proj={id:'f'+Date.now().toString(36),name,kind:'photo',photo:url,autoName:generic};
+        $('thumb').src=url;$('srcname').textContent='Foto: '+name;document.querySelectorAll('.res.sel').forEach(el=>el.classList.remove('sel'));
+        process();readPhoto()};
+      im.src=url};
+    img.onerror=()=>toast('No pude abrir esa imagen. Prueba con una foto JPG o PNG.');img.src=rd.result};rd.readAsDataURL(f);e.target.value=''};
+
+// borde de puntadas del encabezado
+function drawBorder(){const cv=$('border'),w=cv.clientWidth,s=11,dpr=Math.min(window.devicePixelRatio||1,2);cv.width=w*dpr;cv.height=22*dpr;
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.lineCap='round';x.lineWidth=2.6;
+  const cols=['#C72B3B','#E8467A','#FFC840','#3F8F29','#13477D','#8A5BB0'];const pat=[0,1,1,0,0,1,1,0];
+  for(let c=0;c*s<w;c++)for(let r=0;r<2;r++){if(!pat[(c+r*2)%8])continue;const X=c*s,Y=r*s;x.strokeStyle=cols[Math.floor(c/4)%cols.length];
+    x.beginPath();x.moveTo(X+2,Y+s-2);x.lineTo(X+s-2,Y+2);x.moveTo(X+2,Y+2);x.lineTo(X+s-2,Y+s-2);x.stroke()}}
+
+// ---------- Buscador de diseños (los dibuja Claude) ----------
+const samplePromise=(window.claude&&window.claude.use)?window.claude.use('sample').catch(()=>null):Promise.resolve(null);
+let searchCtl=null,lastQ='';
+['Perro','Gato','Rosas','Colibrí','Corazón','Mariposa','Girasol','Alcatraces'].forEach(t=>{
+  const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;
+  b.onclick=()=>{$('q').value=t;runSearch(false)};$('ideas').appendChild(b)});
+samplePromise.then(fn=>{if(!fn){$('searchForm').hidden=true;$('ideas').hidden=true;$('searchLbl').hidden=true;
+  $('searchStatus').textContent='El buscador de diseños funciona al abrir esta página dentro de Claude. Mientras tanto, sube una foto abajo.'}});
+
+function promptFor(q,again){return `Eres una diseñadora experta en patrones de punto de cruz. Crea 4 diseños ORIGINALES y distintos entre sí sobre el tema: "${q}".
+Reglas:
+- Cada diseño es pixel art para punto de cruz, de 24 a 36 cuadros de ancho y de 24 a 36 de alto.
+- El fondo se marca con "." y se queda sin bordar.
+- De 4 a 10 colores por diseño. Siluetas claras y reconocibles, con contorno oscuro; sin degradados finos ni cuadritos sueltos de un solo color salvo ojos o brillos.
+- Varía el estilo: uno tierno, uno más realista, uno con flores o marco decorativo y uno sencillo para principiantes.
+- No copies personajes, logotipos ni marcas. Si el tema es un personaje conocido, haz una versión genérica original.${again?'\n- Esta vez propón ideas diferentes a las más obvias.':''}
+Responde solo con JSON en esta forma:
+{"designs":[{"title":"Perrito sentado","level":"Fácil","palette":{"a":"#3B2A1A","b":"#C8894B","c":"#FFFFFF"},"rows":["....aaa....","...abbba..."]}]}
+Todas las filas de un diseño deben tener exactamente el mismo número de caracteres y usar solo "." y las letras de su paleta.`}
+
+function cleanDesign(d){
+  if(!d||!Array.isArray(d.rows)||!d.palette||typeof d.palette!=='object')return null;
+  const pal={};for(const k in d.palette){const v=String(d.palette[k]).trim();if(k.length===1&&/^#?[0-9a-fA-F]{6}$/.test(v))pal[k]=v[0]==='#'?v:'#'+v}
+  let rows=d.rows.map(r=>String(r)).filter(r=>r.length).slice(0,60);if(rows.length<8||!Object.keys(pal).length)return null;
+  const w=Math.min(60,Math.max(...rows.map(r=>r.length)));rows=rows.map(r=>r.slice(0,w).padEnd(w,'.'));
+  const used=new Set();rows.forEach(r=>{for(const ch of r)if(pal[ch])used.add(ch)});if(!used.size)return null;
+  return {title:String(d.title||'Diseño').slice(0,60),level:String(d.level||'').slice(0,20),pal,rows,w,h:rows.length,n:used.size};
+}
+function designCanvas(d,s,fabric){
+  const pad=fabric?s:0,cv=document.createElement('canvas');cv.width=d.w*s+pad*2;cv.height=d.h*s+pad*2;const x=cv.getContext('2d');
+  if(fabric){x.fillStyle='#F7F6F1';x.fillRect(0,0,cv.width,cv.height);x.lineCap='round';x.lineWidth=Math.max(1,s*.34)}
+  d.rows.forEach((r,ry)=>{for(let c=0;c<d.w;c++){const hx=d.pal[r[c]];if(!hx)continue;const X=pad+c*s,Y=pad+ry*s;
+    if(!fabric){x.fillStyle=hx;x.fillRect(X,Y,s,s);continue}
+    const q=s*.14;x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
+    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke()}});
+  return cv;
+}
+function useDesign(d,card){
+  document.querySelectorAll('.res.sel').forEach(e=>e.classList.remove('sel'));card.classList.add('sel');
+  const src=designCanvas(d,10,false);S.src=src;S.hiRes=null;
+  const th=document.createElement('canvas');th.width=src.width;th.height=src.height;const tx=th.getContext('2d');tx.fillStyle='#fff';tx.fillRect(0,0,th.width,th.height);tx.drawImage(src,0,0);$('thumb').src=th.toDataURL();
+  $('srcname').textContent='Diseño: '+d.title;
+  $('width').value=Math.max(20,d.w);$('widthOut').textContent=$('width').value;
+  $('colors').value=Math.min(40,d.n);$('colorsOut').textContent=$('colors').value;
+  $('bgoff').checked=true;$('clean').checked=false;
+  S.proj={id:'d'+Date.now().toString(36),name:d.title,kind:'design',design:d};S.fromDesign=true;S.removed=new Set();$('detail').checked=false;
+  if(agentCtl)agentCtl.abort();if(!card.closest('#agentDesigns'))$('agent').hidden=true;
+  go('patron');process();
+}
+function errCopy(code){return ({not_granted:'Para buscar diseños hay que permitir que la página use Claude.',sampling_disabled:'Esta cuenta no puede usar el buscador de diseños.',rate_limited:'Se hicieron muchas búsquedas seguidas. Espera un momento y vuelve a intentar.',session_expired:'Vuelve a iniciar sesión en Claude y busca de nuevo.',refused:'No pude dibujar ese tema. Prueba con otra palabra.',invalid_json:'Los diseños salieron incompletos. Toca Buscar otra vez.'})[code]||'Algo falló al dibujar los diseños. Toca Buscar para intentar de nuevo.'}
+
+async function runSearch(again){
+  const q=$('q').value.trim();if(!q){$('q').focus();return}
+  const sample=await samplePromise;if(!sample)return;
+  if(searchCtl)searchCtl.abort();const ctl=searchCtl=new AbortController();lastQ=q;
+  const res=$('results');res.innerHTML='';for(let i=0;i<4;i++){const g=document.createElement('div');g.className='res ghost';res.appendChild(g)}
+  $('searchStatus').textContent=`Dibujando diseños de "${q}"… puede tardar un minuto.`;
+  $('searchBtn').disabled=true;$('moreRow').hidden=false;$('moreBtn').hidden=true;$('stopBtn').hidden=false;
+  try{
+    const out=await sample.json(promptFor(q,again),{signal:ctl.signal,cache:again?false:{gcTime:3600000}});
+    const list=(Array.isArray(out)?out:out&&out.designs||[]).map(cleanDesign).filter(Boolean);
+    res.innerHTML='';
+    if(!list.length){$('searchStatus').textContent='No salieron diseños útiles. Prueba con otra palabra o toca "Ver otros diseños".'}
+    else $('searchStatus').textContent=`${list.length} diseños de "${q}". Toca "Bordar este" para hacer su patrón.`;
+    list.forEach(d=>{
+      const card=document.createElement('figure');card.className='res';card.style.margin='0';
+      const s=Math.max(4,Math.floor(240/Math.max(d.w,d.h)));card.appendChild(designCanvas(d,s,true));
+      const h=document.createElement('h3');h.textContent=d.title;const p=document.createElement('p');
+      p.textContent=`${d.w} × ${d.h} puntadas · ${d.n} colores${d.level?' · '+d.level:''}`;
+      const b=document.createElement('button');b.type='button';b.className='btn primary';b.textContent='Bordar este';b.onclick=()=>useDesign(d,card);
+      card.append(h,p,b);res.appendChild(card)});
+  }catch(e){
+    if(e&&e.code==='cancelled'){if(searchCtl===ctl){res.innerHTML='';$('searchStatus').textContent='Búsqueda detenida.'}}
+    else{res.innerHTML='';$('searchStatus').textContent=errCopy(e&&e.code);
+      if(e&&(e.code==='not_granted'||e.code==='sampling_disabled')){$('searchForm').hidden=true;$('ideas').hidden=true}}
+  }finally{if(searchCtl===ctl){$('searchBtn').disabled=false;$('stopBtn').hidden=true;$('moreBtn').hidden=!lastQ;searchCtl=null}}
+}
+$('searchForm').addEventListener('submit',e=>{e.preventDefault();runSearch(false)});
+$('moreBtn').onclick=()=>{if(lastQ){$('q').value=lastQ;runSearch(true)}};
+$('stopBtn').onclick=()=>{if(searchCtl)searchCtl.abort()};
+
+// ---------- Asistente que lee cada imagen ----------
+let agentCtl=null;
+const canSeeP=samplePromise.then(async fn=>{if(!fn)return false;try{const l=await fn.limits();return !!(l&&l.images)}catch(e){return false}});
+const READ_PROMPT=`Eres una maestra bordadora de punto de cruz y ayudas a una señora que no sabe mucho de tecnología. Mira la imagen adjunta con mucho cuidado y detalle.
+Responde solo con JSON en esta forma:
+{"que_es":"Perrito café sentado en el pasto","descripcion":"2 o 3 frases sencillas: la figura principal, su postura, sus colores, el fondo y los detalles que no deben perderse (ojos, manchas, letras, pétalos).","texto":"","fondo":"blanco liso","colores":["café claro","café oscuro","blanco","verde pasto"],"quitar_fondo":true,"tamano":"Mediano","num_colores":12,"dificultad":"Media","problemas":["La foto está un poco oscura"],"consejos":["Empieza por el centro con el café oscuro","Haz el contorno de los ojos con pespunte en negro al final"]}
+Reglas:
+- "texto": copia exactamente las letras o palabras que se ven en la imagen; cadena vacía si no hay.
+- "letras": una entrada por cada renglón o arco de texto, con su posición medida con cuidado sobre la imagen completa:
+  {"texto":"SALUD","forma":"arco_arriba"|"arco_abajo"|"recto","cx":0.5,"cy":0.5,"radio":0.36,"alto":0.07,"ancho":0.6,"color":"#D9D9D9"}
+  · "arco_arriba": texto curvo en la parte de arriba de un círculo, se lee de izquierda a derecha con las letras de pie hacia afuera. "arco_abajo": curvo en la parte de abajo. "recto": en línea recta.
+  · Para arcos: cx y cy son el centro del CÍRCULO (fracción del ancho y del alto de la imagen, 0 a 1); "radio" es la distancia del centro a la mitad de la altura de las letras, como fracción del ANCHO de la imagen.
+  · Para recto: cx y cy son el centro del renglón; "ancho" es lo que mide el renglón como fracción del ancho.
+  · "alto": altura de las letras mayúsculas como fracción del ANCHO de la imagen. "color": color de las letras en hexadecimal.
+  · Lista vacía si no hay letras.
+- Lee las letras con mucho cuidado, letra por letra (también las chicas, las curvas y las de las orillas), con sus acentos y Ñ.
+- "fondo": el color y tipo de fondo en pocas palabras (por ejemplo "negro liso").
+- "tamano" es "Chico", "Mediano", "Grande" o "Extra grande": usa Grande o Extra grande si hay letras pequeñas, logotipos o muchos detalles finos; Chico si es muy sencilla.
+- Un logotipo o dibujo sobre fondo liso de un solo color (aunque sea negro) lleva "quitar_fondo": true.
+- "num_colores" es 6, 12 o 24.
+- "quitar_fondo" es true si el fondo es liso o no importa, false si el fondo es parte del dibujo.
+- "problemas": solo si de verdad los hay (borrosa, oscura, fondo muy revuelto, figura muy chica); si no, lista vacía.
+- De 2 a 4 consejos concretos de bordado.
+- Español de México, cálido y sin palabras técnicas de computadora. Si hay personas, descríbelas sin decir quiénes son.`;
+const DRAW_PROMPT=`Eres diseñadora de patrones de punto de cruz. Convierte la imagen adjunta en 2 patrones de punto de cruz que se parezcan lo más posible a ella: la misma figura principal, postura, proporciones, colores y detalles característicos (ojos, manchas, pétalos, letras).
+- Diseño 1: fiel y detallado, de 40 a 50 cuadros de ancho.
+- Diseño 2: simplificado para principiantes, de 26 a 34 cuadros de ancho.
+- El fondo va con "." (sin bordar), salvo que el fondo sea parte importante de la imagen.
+- De 5 a 14 colores, contorno oscuro donde ayude a reconocer la figura, sin cuadritos sueltos salvo ojos o brillos.
+- Si hay personas, no digas quiénes son.
+Responde solo con JSON en esta forma:
+{"designs":[{"title":"Mi perrito (detallado)","level":"Media","palette":{"a":"#3B2A1A","b":"#C8894B"},"rows":["....aa....","...abba..."]}]}
+Todas las filas de un diseño deben tener exactamente el mismo número de caracteres y usar solo "." y las letras de su paleta.`;
+const str=(v,n)=>typeof v==='string'?v.trim().slice(0,n):'';
+const strs=(v,k,n)=>Array.isArray(v)?v.map(x=>str(x,n)).filter(Boolean).slice(0,k):[];
+function normReading(r){
+  if(!r||typeof r!=='object')return null;
+  const out={que_es:str(r.que_es,80),descripcion:str(r.descripcion,600),colores:strs(r.colores,10,40),
+    texto:str(r.texto,120),fondo:str(r.fondo,60),
+    letras:(Array.isArray(r.letras)?r.letras:[]).map(l=>{if(!l||typeof l!=='object')return null;const n=(v,a,b,d)=>{v=+v;return isFinite(v)?Math.min(b,Math.max(a,v)):d};
+      const t=str(l.texto,40),col=str(l.color,7);if(!t)return null;
+      return {texto:t,forma:['arco_arriba','arco_abajo','recto'].includes(l.forma)?l.forma:'recto',cx:n(l.cx,0,1,.5),cy:n(l.cy,0,1,.5),radio:n(l.radio,.03,.7,.35),
+        alto:n(l.alto,.015,.4,.06),ancho:n(l.ancho,.05,1,.5),color:/^#[0-9a-f]{6}$/i.test(col)?col:'#FFFFFF',ds:0,dy:0}}).filter(Boolean).slice(0,6),
+    quitar_fondo:r.quitar_fondo!==false,tamano:['Chico','Mediano','Grande','Extra grande'].includes(r.tamano)?r.tamano:'Mediano',
+    num_colores:[6,12,24].includes(+r.num_colores)?+r.num_colores:12,dificultad:str(r.dificultad,20),
+    problemas:strs(r.problemas,4,200),consejos:strs(r.consejos,4,220)};
+  return out.que_es||out.descripcion?out:null;
+}
+function renderReading(r){
+  const b=$('agentBody');b.innerHTML='';
+  const add=(tag,text,cls)=>{const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;b.appendChild(e);return e};
+  if(r.que_es)add('h3',r.que_es);if(r.descripcion)add('p',r.descripcion);
+  if(r.texto)add('p',`Dice: “${r.texto}”. Escribí las letras con abecedario de punto de cruz y agrandé el bordado para que se lean.`);
+  if(r.fondo)add('p',`Fondo: ${r.fondo}. ${r.quitar_fondo?'Lo quité para que se vea la tela.':'Lo dejé porque es parte del dibujo.'}`);
+  if(r.colores.length){const d=document.createElement('div');d.className='pills';r.colores.forEach(c=>{const s=document.createElement('span');s.className='pill';s.textContent=c;d.appendChild(s)});b.appendChild(d)}
+  add('p',[r.dificultad&&`Dificultad: ${r.dificultad}`,`Tamaño sugerido: ${r.tamano}`,`${r.num_colores} colores`,r.quitar_fondo?'el fondo se queda sin bordar':'el fondo también se borda'].filter(Boolean).join(' · '));
+  const list=(title,items,cls)=>{if(!items.length)return;add('p',title,cls).style.fontWeight='700';const ul=document.createElement('ul');items.forEach(t=>{const li=document.createElement('li');li.textContent=t;ul.appendChild(li)});b.appendChild(ul)};
+  list('Ojo con esto:',r.problemas,'warn');
+  if(r.dudas&&r.dudas.length)list('Letras que no se veían claras (revísalas en Ajustes):',r.dudas,'warn');
+  if(r.check&&r.check.length){add('p','Comprobé las letras en el bordado:').style.fontWeight='700';const ul=document.createElement('ul');ul.className='checks';
+    r.check.forEach(c=>{const li=document.createElement('li');li.dataset.ok=String(c.ok);li.textContent=c.ok?`“${c.texto}” se lee bien.`:`“${c.texto}” todavía no se lee bien. En Ajustes elige “Extra grande” o toca “A+ Más grandes”, y revisa que esté bien escrito.`;ul.appendChild(li)});b.appendChild(ul)}
+  list('Consejos para bordarla:',r.consejos);
+}
+function applyReading(r){
+  let w=(SIZES.find(s=>s[0]===r.tamano)||SIZES[1])[1],nc=r.num_colores;
+  if(r.texto){w=Math.max(w,100);nc=Math.max(nc,12)}
+  if(r.letras.length){const minA=Math.min(...r.letras.map(l=>l.alto));w=Math.max(w,Math.ceil(8/minA));
+    // que cada renglón quepa con el abecedario grande (6 cuadritos por letra)
+    r.letras.forEach(l=>{const n=[...l.texto].length,room=l.forma==='recto'?Math.max(l.ancho*1.3,.3):l.radio*1.8;w=Math.max(w,Math.ceil(n*6/room))});
+    w=Math.min(150,w);$('textfix').checked=true}
+  if(S.proj)S.proj.texts=r.letras.map(l=>Object.assign({},l));
+  $('width').value=w;$('widthOut').textContent=w;$('colors').value=nc;$('colorsOut').textContent=nc;$('bgoff').checked=r.quitar_fondo;$('detail').checked=true;
+  if(S.proj&&S.proj.autoName&&r.que_es){S.proj.name=r.que_es.slice(0,40);S.proj.autoName=false;$('srcname').textContent='Foto: '+S.proj.name}
+  process();
+}
+function agentError(e){
+  const c=e&&e.code;
+  if(['not_granted','sampling_disabled','images_unavailable','not_declared','capability_disabled'].includes(c)){$('agent').hidden=true;return}
+  $('agentStatus').textContent=c==='rate_limited'?'Se hicieron muchas consultas seguidas. Espera un momento y vuelve a intentar.':
+    c==='image_rejected'?'No pude abrir esa imagen. Prueba con otra foto.':c==='refused'?'No puedo ayudar con esta imagen. Prueba con otra.':
+    'No pude terminar de leer la imagen. Toca "Volver a leer la imagen".';
+  $('agentRead').hidden=false;
+}
+function srcBlob(){return new Promise(res=>{const src=S.hiRes||S.src;if(!src)return res(null);const w=src.naturalWidth||src.width,h=src.naturalHeight||src.height,k=Math.min(1,1600/Math.max(w,h));
+  const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);c.toBlob(res,'image/jpeg',0.92)})}
+// pasos que se ven en pantalla mientras trabaja el asistente
+function agentSteps(names){const ol=$('agentSteps');ol.innerHTML='';ol.hidden=false;
+  const lis=names.map(n=>{const li=document.createElement('li');li.textContent=n;li.dataset.st='wait';ol.appendChild(li);return li});
+  return (i,st,txt)=>{lis[i].dataset.st=st;lis[i].textContent=names[i]+(txt?' · '+txt:'')}}
+const limP=samplePromise.then(fn=>fn?fn.limits().catch(()=>null):null);
+const VERIFY_PROMPT=prev=>`Eres una maestra bordadora y correctora muy cuidadosa. La PRIMERA imagen es la imagen completa; las demás son acercamientos a las zonas donde parece haber letras.
+Una primera lectura encontró estas letras:
+${JSON.stringify(prev)}
+Revísalas con lupa, letra por letra:
+- Copia el texto EXACTO de cada renglón o arco: cada letra, número, acento, Ñ, signo y espacio. No corrijas la ortografía: copia lo que se ve. Si una letra no se distingue bien, elige la más probable por el contexto y anótalo en "dudas".
+- Revisa que no falte ningún texto (también letras chicas, en curva o en las orillas) y quita lo que no sea texto.
+- Corrige la forma ("arco_arriba", "arco_abajo" o "recto"), la posición, el tamaño y el color de cada uno, medidos sobre la imagen COMPLETA: cx y cy son fracción del ancho y del alto; en los arcos cx,cy es el centro del CÍRCULO y "radio" la distancia del centro a la mitad de la altura de las letras como fracción del ANCHO; "alto" es la altura de las mayúsculas como fracción del ANCHO; "ancho" es lo que mide el renglón como fracción del ancho; "color" en hexadecimal.
+Responde solo con JSON en esta forma:
+{"texto":"todo el texto en orden de lectura","letras":[{"texto":"SALUD","forma":"recto","cx":0.5,"cy":0.8,"radio":0.3,"alto":0.06,"ancho":0.5,"color":"#FFFFFF"}],"dudas":["La tercera letra de SALUD podría ser una O o una Q"]}`;
+const CHECK_PROMPT=`Esta imagen es la simulación de un bordado de punto de cruz ya terminado. Lee todas las palabras, letras y números que se puedan leer en ella, tal como los leería una persona que la ve. No adivines: si una palabra no se entiende, no la pongas.
+Responde solo con JSON en esta forma: {"lecturas":["texto que se lee","otro texto"]}`;
+const norm=t=>String(t).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function lev(a,b){const d=Array.from({length:b.length+1},(_,j)=>j);for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]}
+function legible(e,reads){if(!e)return true;const all=reads.join('');if(all.includes(e))return true;
+  return reads.some(r=>r&&1-lev(e,r)/Math.max(e.length,r.length)>=0.8)}
+// acercamientos a cada renglón o arco de letras, sobre la imagen en alta resolución
+function textCrops(letras,maxN){const src=S.hiRes||S.src;if(!src||!maxN)return Promise.resolve([]);
+  const W=src.naturalWidth||src.width,H=src.naturalHeight||src.height;
+  return Promise.all(letras.slice(0,maxN).map(l=>{const a=l.alto*W;let x0,x1,y0,y1;
+    if(l.forma==='recto'){const hw=Math.max(l.ancho*W*.6,a*2);x0=l.cx*W-hw;x1=l.cx*W+hw;y0=l.cy*H-a*1.6;y1=l.cy*H+a*1.6}
+    else{const r=l.radio*W,cx=l.cx*W,cy=l.cy*H;x0=cx-r-a*1.6;x1=cx+r+a*1.6;
+      if(l.forma==='arco_arriba'){y0=cy-r-a*1.6;y1=cy+r*.25}else{y0=cy-r*.25;y1=cy+r+a*1.6}}
+    x0=Math.max(0,x0);y0=Math.max(0,y0);x1=Math.min(W,x1);y1=Math.min(H,y1);const w=x1-x0,h=y1-y0;if(w<4||h<4)return null;
+    const k=Math.min(4,1400/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(src,x0,y0,w,h,0,0,c.width,c.height);
+    return new Promise(res=>c.toBlob(res,'image/jpeg',0.92))})).then(a=>a.filter(Boolean))}
+// el patrón dibujado como bordado terminado, para comprobar que las letras se lean
+function stitchedBlob(){const s=Math.max(4,Math.min(10,Math.floor(1500/Math.max(S.cols,S.rows)))),pad=s*2,W=S.cols*s+pad*2,H=S.rows*s+pad*2;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.fillStyle=$('fabric').value;x.fillRect(0,0,W,H);
+  x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
+  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const p=S.grid[r*S.cols+c];if(p<0)continue;const hx=S.pal[p].hex,X=pad+c*s,Y=pad+r*s,q=s*.14;
+    x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
+    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke()}
+  return new Promise(res=>cv.toBlob(res,'image/jpeg',0.9))}
+async function checkLegible(fn,ctl,live){
+  const items=(S.proj&&S.proj.texts)||[];let res=[];
+  for(let round=0;round<3;round++){
+    $('agentStatus').textContent=round?`Agrandé el bordado y las letras. Vuelvo a revisar que se lean (intento ${round+1} de 3)…`:'Estoy leyendo tu patrón como si ya estuviera bordado, para ver si las letras se entienden…';
+    const out=await fn.json(CHECK_PROMPT,{images:await stitchedBlob(),signal:ctl.signal,cache:false});
+    if(!live())return null;
+    const reads=strs(out&&out.lecturas,20,160).map(norm);
+    res=items.map(t=>({texto:t.texto,ok:legible(norm(t.texto),reads)}));
+    if(res.every(x=>x.ok)||round===2)break;
+    // no se leen: más puntadas a lo ancho y letras más grandes donde falló
+    const w=+$('width').value;if(w<150){const nw=Math.min(150,w+25);$('width').value=nw;$('widthOut').textContent=nw}
+    items.forEach((t,i)=>{if(!res[i].ok)t.ds=(t.ds||0)+1});
+    process();
+  }
+  return res;
+}
+async function readPhoto(){
+  const fn=await samplePromise;if(!fn||!(await canSeeP))return;
+  const proj=S.proj,box=$('agent');box.hidden=false;box.classList.add('busy');
+  $('agentBody').innerHTML='';$('agentDesigns').innerHTML='';$('agentDraw').hidden=true;$('agentRead').hidden=true;
+  if(agentCtl)agentCtl.abort();const ctl=agentCtl=new AbortController();
+  const live=()=>ctl===agentCtl&&S.proj===proj;
+  const step=agentSteps(['Mirar la imagen completa','Revisar las letras una por una','Comprobar que se lean en el bordado']);
+  try{
+    step(0,'work');$('agentStatus').textContent='Estoy mirando tu imagen con mucho cuidado… tarda unos segundos.';
+    const img=await srcBlob();
+    const r=normReading(await fn.json(READ_PROMPT,{images:img,signal:ctl.signal,cache:false,modelTier:'complex'}));
+    if(!live())return;
+    if(!r)throw {code:'invalid_json'};
+    step(0,'done');
+    if(r.letras.length||r.texto){
+      step(1,'work');$('agentStatus').textContent='Encontré letras. Las estoy revisando una por una con lupa…';
+      try{
+        const lim=await limP,maxN=Math.min(6,Math.max(0,((lim&&lim.images&&lim.images.maxCount)||1)-1));
+        const crops=await textCrops(r.letras,maxN);
+        const prev=r.letras.map(({texto,forma,cx,cy,radio,alto,ancho,color})=>({texto,forma,cx,cy,radio,alto,ancho,color}));
+        const v=await fn.json(VERIFY_PROMPT(prev),{images:[img,...crops],signal:ctl.signal,cache:false,modelTier:'complex'});
+        if(!live())return;
+        const fixed=normReading({que_es:r.que_es||'imagen',letras:v&&v.letras,texto:v&&v.texto});
+        if(fixed&&fixed.letras.length){r.letras=fixed.letras;if(fixed.texto)r.texto=fixed.texto}
+        r.dudas=strs(v&&v.dudas,4,200);
+        step(1,'done');
+      }catch(e){if(e&&e.code==='cancelled')throw e;if(!live())return;step(1,'skip','no se pudo, sigo con la primera lectura')}
+    }else step(1,'skip','no hay letras');
+    if(proj)proj.reading=r;
+    renderReading(r);applyReading(r);
+    if(r.letras.length&&$('textfix').checked){
+      step(2,'work');
+      try{const res=await checkLegible(fn,ctl,live);if(!live())return;
+        r.check=res;step(2,res.every(x=>x.ok)?'done':'warn',res.every(x=>x.ok)?'':'algunas letras siguen difíciles');
+      }catch(e){if(e&&e.code==='cancelled')throw e;if(!live())return;step(2,'skip','no se pudo comprobar')}
+    }else step(2,'skip',r.letras.length?'':'no hay letras');
+    if(proj){proj.reading=r;saveSoon()}
+    renderReading(r);
+    const bad=r.check&&r.check.some(x=>!x.ok);
+    $('agentStatus').textContent=bad?'Listo, pero algunas letras siguen difíciles de leer. Abajo te digo cuáles y qué hacer.':
+      r.check?'Listo. Revisé tu imagen y comprobé que las letras se lean en el bordado.':'Listo. Ya ajusté el tamaño y los colores según tu imagen.';
+    $('agentDraw').hidden=false;$('agentRead').hidden=false;
+  }catch(e){if(e&&e.code==='cancelled')return;if(ctl===agentCtl)agentError(e)}
+  finally{if(ctl===agentCtl){box.classList.remove('busy');agentCtl=null}}
+}
+function showSavedReading(p){
+  canSeeP.then(ok=>{if(S.proj!==p)return;const box=$('agent');
+    if(!ok&&!p.reading){box.hidden=true;return}
+    box.hidden=false;box.classList.remove('busy');$('agentBody').innerHTML='';$('agentSteps').hidden=true;
+    if(p.reading){renderReading(p.reading);$('agentStatus').textContent='Esto es lo que vi cuando subiste esta imagen.'}
+    else $('agentStatus').textContent='Puedo mirar tu imagen y darte consejos para bordarla.';
+    $('agentDraw').hidden=!ok;$('agentRead').hidden=!ok;$('agentRead').textContent=p.reading?'Volver a leer la imagen':'Leer mi imagen'});
+}
+function makeDesignCard(d){
+  const card=document.createElement('figure');card.className='res';card.style.margin='0';
+  const s=Math.max(4,Math.floor(240/Math.max(d.w,d.h)));card.appendChild(designCanvas(d,s,true));
+  const h=document.createElement('h3');h.textContent=d.title;const p=document.createElement('p');
+  p.textContent=`${d.w} × ${d.h} puntadas · ${d.n} colores${d.level?' · '+d.level:''}`;
+  const b=document.createElement('button');b.type='button';b.className='btn primary';b.textContent='Bordar este';b.onclick=()=>useDesign(d,card);
+  card.append(h,p,b);return card;
+}
+$('agentRead').onclick=()=>readPhoto();
+$('agentDraw').onclick=async()=>{
+  const fn=await samplePromise;if(!fn)return;const proj=S.proj,box=$('agent'),res=$('agentDesigns');
+  if(agentCtl)agentCtl.abort();const ctl=agentCtl=new AbortController();
+  box.classList.add('busy');$('agentDraw').disabled=true;res.innerHTML='';
+  for(let i=0;i<2;i++){const g=document.createElement('div');g.className='res ghost';res.appendChild(g)}
+  $('agentStatus').textContent='Estoy dibujando tu imagen en punto de cruz… puede tardar un minuto.';
+  try{
+    const out=await fn.json(DRAW_PROMPT,{images:await srcBlob(),signal:ctl.signal,cache:false});
+    if(ctl!==agentCtl||S.proj!==proj)return;
+    const list=(Array.isArray(out)?out:out&&out.designs||[]).map(cleanDesign).filter(Boolean);res.innerHTML='';
+    if(!list.length){$('agentStatus').textContent='No me salió bien el dibujo. Toca el botón para intentar otra vez.';return}
+    list.forEach(d=>res.appendChild(makeDesignCard(d)));
+    $('agentStatus').textContent='Aquí están. Toca "Bordar este" para usar uno, o sigue con tu foto tal como está.';
+  }catch(e){if(e&&e.code==='cancelled')return;res.innerHTML='';if(ctl===agentCtl)agentError(e)}
+  finally{if(ctl===agentCtl){box.classList.remove('busy');agentCtl=null}$('agentDraw').disabled=false}
+};
+
+// ---------- Opciones sencillas ----------
+const SIZES=[['Chico',40],['Mediano',70],['Grande',100],['Extra grande',140]];
+const COLORSETS=[['Sencillo','6 colores',6],['Normal','12 colores',12],['Con detalle','24 colores',24]];
+function mkChoice(t,s,on){const b=document.createElement('button');b.type='button';b.className='choice';b.setAttribute('aria-pressed',String(on));
+  const st=document.createElement('strong');st.textContent=t;const sm=document.createElement('small');sm.textContent=s;b.append(st,sm);return b}
+function updateSimple(){
+  renderNewPos();
+  $('simple').hidden=!!S.fromDesign;$('designNote').hidden=!S.fromDesign;
+  const ct=+$('count').value,w=+$('width').value,c=+$('colors').value;
+  const sc=$('sizeChoices');sc.innerHTML='';
+  SIZES.forEach(([t,v])=>{const b=mkChoice(t,`≈ ${Math.round(v/ct*2.54)} cm de ancho`,w===v);
+    b.onclick=()=>{$('width').value=v;$('widthOut').textContent=v;process()};sc.appendChild(b)});
+  const cc=$('colorChoices');cc.innerHTML='';
+  COLORSETS.forEach(([t,s,v])=>{const b=mkChoice(t,s,c===v);
+    b.onclick=()=>{$('colors').value=v;$('colorsOut').textContent=v;process()};cc.appendChild(b)});
+  // fondo
+  $('bgBlock').hidden=!!S.fromDesign;
+  const on=$('bgoff').checked;$('bgRemove').setAttribute('aria-pressed',String(on));$('bgKeep').setAttribute('aria-pressed',String(!on));
+  if(S.bgLab){let b=DMC[0],bd=Infinity;DMC.forEach(d=>{const x=d2(S.bgLab,d.lab);if(x<bd){bd=x;b=d}});
+    $('bgSw').style.background=S.bgHex;$('bgSw').hidden=false;$('bgName').textContent=on?`${b.name}: se quita`:`${b.name}: se borda`;}
+  else{$('bgSw').hidden=true;$('bgName').textContent='Esta imagen no tiene un fondo liso.'}
+  // colores quitados a mano
+  $('restoreColors').hidden=!S.removed.size;
+  $('restoreColors').textContent=S.removed.size===1?'Volver a poner el color quitado':`Volver a poner los ${S.removed.size} colores quitados`;
+}
+$('bgRemove').onclick=()=>{$('bgoff').checked=true;process()};
+$('bgKeep').onclick=()=>{$('bgoff').checked=false;process()};
+$('detail').onchange=schedule;
+$('dropColor').onclick=()=>{if(S.hi<0)return;const p=S.pal[S.hi];S.removed.add(p.code);toast(`Quitado DMC ${p.code}. Ahí se queda la tela.`);process()};
+$('restoreColors').onclick=()=>{S.removed.clear();toast('Colores de vuelta');process()};
+
+// ---------- Guía hilo por hilo ----------
+function renderGuide(){
+  $('dropColor').hidden=S.hi<0;
+  const g=$('gmid');g.innerHTML='';if(!S.pal.length)return;
+  const txt=document.createElement('div');txt.style.minWidth='0';const a=document.createElement('strong'),b=document.createElement('small');
+  if(S.hi<0){a.textContent='Borda hilo por hilo';b.textContent='Toca ▶ para empezar con el primer color.';}
+  else{const p=S.pal[S.hi];let n=0;S.done.forEach(i=>{if(S.grid[i]===S.hi)n++});
+    const sw=document.createElement('span');sw.className='sw';sw.style.background=p.hex;sw.style.color=p.light?'#111':'#fff';sw.textContent=p.sym;g.appendChild(sw);
+    a.textContent=`Hilo ${S.hi+1} de ${S.pal.length}: DMC ${p.code}`;
+    b.textContent=n>=p.count?`${p.name} · ¡Terminado! Toca ▶ para el siguiente.`:`${p.name} · busca el símbolo ${p.sym} · faltan ${fmt(p.count-n)} puntadas`;}
+  txt.append(a,b);g.appendChild(txt);
+}
+$('nextC').onclick=()=>{if(!S.pal.length)return;S.hi=(S.hi+1)%S.pal.length;renderChips();drawScreen()};
+$('prevC').onclick=()=>{if(!S.pal.length)return;S.hi=S.hi<=0?S.pal.length-1:S.hi-1;renderChips();drawScreen()};
+
+// ---------- Mis bordados (se guardan en este teléfono) ----------
+const PKEY='hilo-proyectos';
+function loadProjects(){try{const a=JSON.parse(localStorage.getItem(PKEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function saveProjects(a){for(const n of [8,5,3,1]){try{localStorage.setItem(PKEY,JSON.stringify(a.slice(0,n)));return}catch(e){}}}
+function currentSettings(){return {width:+$('width').value,colors:+$('colors').value,count:$('count').value,fabric:$('fabric').value,bgoff:$('bgoff').checked,clean:$('clean').checked,detail:$('detail').checked,textfix:$('textfix').checked,removed:[...S.removed]}}
+function saveCurrent(){
+  if(!S.proj||!S.grid)return;const tot=totalStitches();let n=0;S.done.forEach(i=>{if(S.grid[i]>=0)n++});
+  S.proj.settings=currentSettings();S.proj.pct=tot?Math.round(n/tot*100):0;S.proj.updated=Date.now();
+  saveProjects([S.proj,...loadProjects().filter(p=>p.id!==S.proj.id)]);renderMine();
+}
+let saveT;function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveCurrent,600)}
+function openProject(p){
+  const s=p.settings||{};
+  if(s.width){$('width').value=s.width;$('widthOut').textContent=s.width}
+  if(s.colors){$('colors').value=s.colors;$('colorsOut').textContent=s.colors}
+  if(s.count)$('count').value=s.count;if(s.fabric)$('fabric').value=s.fabric;
+  if(s.bgoff!==undefined)$('bgoff').checked=s.bgoff;if(s.clean!==undefined)$('clean').checked=s.clean;
+  $('detail').checked=s.detail!==undefined?s.detail:false;$('textfix').checked=s.textfix!==false;S.removed=new Set(Array.isArray(s.removed)?s.removed:[]);
+  S.proj=p;S.hiRes=null;S.fromDesign=p.kind==='design';$('srcname').textContent=(S.fromDesign?'Diseño: ':'Foto: ')+p.name;
+  document.querySelectorAll('.res.sel').forEach(el=>el.classList.remove('sel'));
+  if(agentCtl)agentCtl.abort();$('agentDesigns').innerHTML='';
+  if(S.fromDesign){$('agent').hidden=true;S.src=designCanvas(p.design,10,false);$('thumb').src=designCanvas(p.design,4,true).toDataURL();process()}
+  else{const im=new Image();im.onload=()=>{S.src=im;$('thumb').src=p.photo;process()};im.onerror=()=>toast('No pude abrir ese bordado.');im.src=p.photo;showSavedReading(p)}
+}
+function renderMine(){
+  const a=loadProjects(),box=$('mineList');$('mine').hidden=!a.length;$('mineBtn').hidden=!a.length;box.innerHTML='';
+  a.forEach(p=>{
+    const card=document.createElement('figure');card.className='res proj';card.style.margin='0';
+    const cur=S.proj&&S.proj.id===p.id;if(cur)card.classList.add('sel');
+    const img=new Image();img.alt='';
+    try{img.src=p.kind==='design'?designCanvas(p.design,4,true).toDataURL():p.photo}catch(e){}
+    const h=document.createElement('h3');h.textContent=p.name;
+    const info=document.createElement('p');info.textContent=cur?`${p.pct||0}% bordado · abierto ahora`:`${p.pct||0}% bordado`;
+    const row=document.createElement('div');row.className='row';
+    const open=document.createElement('button');open.type='button';open.className='btn primary';open.textContent=cur?'Ver patrón':'Seguir';
+    open.onclick=()=>{go('patron');if(!cur)openProject(p)};
+    const del=document.createElement('button');del.type='button';del.className='btn danger';del.textContent='Quitar';let arm=false;
+    del.onclick=()=>{if(!arm){arm=true;del.textContent='¿Seguro?';setTimeout(()=>{arm=false;del.textContent='Quitar'},3000);return}
+      saveProjects(loadProjects().filter(x=>x.id!==p.id));if(cur)S.proj=null;renderMine();toast('Bordado quitado')};
+    row.append(open,del);card.append(img,h,info,row);box.appendChild(card)});
+}
+$('newBtn').onclick=()=>{$('s1').scrollIntoView({block:'start'});setTimeout(()=>{if(!$('searchForm').hidden)$('q').focus()},400)};
+
+// ---------- Letra grande ----------
+function setBig(on){document.body.classList.toggle('big',on);$('bigText').setAttribute('aria-pressed',String(on));
+  $('bigText').textContent=on?'Aa Letra normal':'Aa Letra grande';store('hilo-big',on?'1':'0');if(S.grid){fitCell(true);drawScreen()}}
+$('bigText').onclick=()=>setBig(!document.body.classList.contains('big'));
+
+// inicio
+drawBorder();
+let lastW=window.innerWidth,rsT;
+window.addEventListener('resize',()=>{drawBorder();clearTimeout(rsT);rsT=setTimeout(()=>{
+  // solo cuando cambia el ancho (girar el teléfono); la barra del navegador que sube y baja no cuenta
+  if(Math.abs(window.innerWidth-lastW)<40||!S.grid)return;lastW=window.innerWidth;
+  fitCell(true);drawScreen();centerChart();if(S.tab==='ajustes')drawPreview();
+},200)});
+if(store('hilo-big')==='1')setBig(true);
+const saved=loadProjects();
+if(saved.length){go('patron',true);openProject(saved[0]);toast('Seguimos con: '+saved[0].name)}
+else{const smp=sampleImage();S.src=smp;$('thumb').src=smp.toDataURL();process()}
+renderMine();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawScreen()});
+</script>
+
+</body></html>
