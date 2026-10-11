@@ -88,6 +88,8 @@ body.big{font-size:20px}
 .how li{counter-increment:h;display:flex;gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .how li::before{content:counter(h);font-family:var(--f-display);font-size:1.7rem;color:var(--rose);line-height:1}
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px}
+.backup{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.backup .lbl{margin:0}
 .addtext{display:flex;flex-direction:column;gap:10px;border:1px dashed var(--line);border-radius:12px;padding:12px}
 .addtext input[type=text]{font:inherit;font-weight:700;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:48px;width:100%;letter-spacing:.04em}
 #newPos{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
@@ -276,11 +278,20 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
 
   <!-- 1. Diseño -->
   <section class="panel" id="p-diseno" role="tabpanel" aria-labelledby="t-diseno">
-    <section class="card" id="mine" hidden aria-labelledby="mineH">
+    <section class="card" id="mine" aria-labelledby="mineH">
       <div class="step"><h2 id="mineH">Mis bordados</h2></div>
-      <p class="hint">Aquí se guardan solos tus patrones y lo que llevas bordado.</p>
+      <p class="hint" id="mineHint">Tus fotos, ajustes, letras y lo que llevas bordado se guardan solos en este teléfono o computadora, aunque cierres o recargues la página.</p>
       <div class="results" id="mineList"></div>
-      <button class="btn" type="button" id="newBtn">Empezar un bordado nuevo</button>
+      <button class="btn" type="button" id="newBtn" hidden>Empezar un bordado nuevo</button>
+      <div class="backup">
+        <p class="lbl">Copia de seguridad</p>
+        <p class="note">Guarda un archivo con todos tus bordados para pasarlos a otro teléfono o por si se borra el navegador.</p>
+        <div class="toolbar">
+          <button class="btn small" type="button" id="backupBtn">Guardar copia de seguridad</button>
+          <label class="btn small" for="restoreFile">Recuperar una copia</label>
+          <input type="file" id="restoreFile" accept=".json,application/json" class="sr">
+        </div>
+      </div>
     </section>
 
     <section class="card" aria-labelledby="s1">
@@ -813,6 +824,7 @@ function hashGrid(){let h=2166136261;h^=S.cols;for(let i=0;i<S.grid.length;i++){
 function afterProcess(){
   S.hi=-1;S.key='hilo-'+hashGrid();
   S.done=new Set();const saved=store(S.key);if(saved){try{JSON.parse(saved).forEach(i=>S.done.add(i))}catch(e){}}
+  else if(S.proj&&S.proj.doneKey===S.key&&Array.isArray(S.proj.done))S.proj.done.forEach(i=>S.done.add(i));
   S.undo=[];fitCell(true);renderFacts();renderChips();drawScreen();centerChart();renderThreads();S.pagesDirty=true;updateSimple();renderTexts();saveCurrent();
   if(S.tab==='ajustes')drawPreview();if(S.tab==='hojas')buildPages();
 }
@@ -1091,7 +1103,7 @@ $('mineBtn').onclick=()=>{go('diseno');$('mine').scrollIntoView({block:'start'})
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
   rd.onload=()=>{const img=new Image();img.onload=()=>{
       // se guarda una copia pequeña para poder retomar el bordado después
-      const k=Math.min(1,600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));
+      const k=Math.min(1,1000/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));
       const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
       const url=c.toDataURL('image/jpeg',0.85),im=new Image();
       // copia grande solo en memoria, para que el asistente lea bien las letras
@@ -1460,14 +1472,38 @@ $('nextC').onclick=()=>{if(!S.pal.length)return;S.hi=(S.hi+1)%S.pal.length;rende
 $('prevC').onclick=()=>{if(!S.pal.length)return;S.hi=S.hi<=0?S.pal.length-1:S.hi-1;renderChips();drawScreen()};
 
 // ---------- Mis bordados (se guardan en este teléfono) ----------
-const PKEY='hilo-proyectos';
-function loadProjects(){try{const a=JSON.parse(localStorage.getItem(PKEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
-function saveProjects(a){for(const n of [8,5,3,1]){try{localStorage.setItem(PKEY,JSON.stringify(a.slice(0,n)));return}catch(e){}}}
+// Se guardan en la base de datos del navegador (IndexedDB): caben muchos bordados con su foto y no se borran al recargar.
+const PKEY='hilo-proyectos',DBN='hilo-a-hilo';
+let PROJ=[],idb=null;
+function idbOpen(){return new Promise(res=>{try{const rq=indexedDB.open(DBN,1);
+  rq.onupgradeneeded=()=>rq.result.createObjectStore('proyectos',{keyPath:'id'});
+  rq.onsuccess=()=>res(rq.result);rq.onerror=()=>res(null);rq.onblocked=()=>res(null)}catch(e){res(null)}})}
+function idbAll(){return new Promise(res=>{try{const rq=idb.transaction('proyectos').objectStore('proyectos').getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>res([])}catch(e){res([])}})}
+function idbPut(p){try{const tx=idb.transaction('proyectos','readwrite');tx.objectStore('proyectos').put(JSON.parse(JSON.stringify(p)));
+  tx.onerror=()=>toast('No se pudo guardar. Revisa que el teléfono tenga espacio.')}catch(e){}}
+function idbDel(id){try{idb.transaction('proyectos','readwrite').objectStore('proyectos').delete(id)}catch(e){}}
+function saveLocal(){for(const n of [PROJ.length,8,5,3,1]){try{localStorage.setItem(PKEY,JSON.stringify(PROJ.slice(0,n)));
+  if(n<PROJ.length)toast('Se llenó la memoria. Guarda una copia de seguridad.');return}catch(e){}}}
+async function initStore(){
+  idb=await idbOpen();
+  let old=[];try{old=JSON.parse(localStorage.getItem(PKEY)||'[]')}catch(e){}if(!Array.isArray(old))old=[];
+  if(idb){PROJ=await idbAll();
+    // lo que estaba guardado a la manera anterior se pasa a la base de datos
+    if(old.length){old.forEach(p=>{if(p&&p.id&&!PROJ.some(x=>x.id===p.id)){PROJ.push(p);idbPut(p)}});try{localStorage.removeItem(PKEY)}catch(e){}}
+  }else PROJ=old;
+  PROJ.sort((a,b)=>(b.updated||0)-(a.updated||0));
+  // que el navegador no borre los bordados cuando le falte espacio
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
+}
+function loadProjects(){return PROJ.slice()}
+function saveProject(p){PROJ=[p,...PROJ.filter(x=>x.id!==p.id)];if(idb)idbPut(p);else saveLocal()}
+function deleteProject(id){PROJ=PROJ.filter(x=>x.id!==id);if(idb)idbDel(id);else saveLocal()}
 function currentSettings(){return {width:+$('width').value,colors:+$('colors').value,count:$('count').value,fabric:$('fabric').value,bgoff:$('bgoff').checked,clean:$('clean').checked,detail:$('detail').checked,textfix:$('textfix').checked,removed:[...S.removed]}}
 function saveCurrent(){
   if(!S.proj||!S.grid)return;const tot=totalStitches();let n=0;S.done.forEach(i=>{if(S.grid[i]>=0)n++});
   S.proj.settings=currentSettings();S.proj.pct=tot?Math.round(n/tot*100):0;S.proj.updated=Date.now();
-  saveProjects([S.proj,...loadProjects().filter(p=>p.id!==S.proj.id)]);renderMine();
+  S.proj.done=[...S.done];S.proj.doneKey=S.key;
+  saveProject(S.proj);renderMine();
 }
 let saveT;function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveCurrent,600)}
 function openProject(p){
@@ -1484,7 +1520,8 @@ function openProject(p){
   else{const im=new Image();im.onload=()=>{S.src=im;$('thumb').src=p.photo;process()};im.onerror=()=>toast('No pude abrir ese bordado.');im.src=p.photo;showSavedReading(p)}
 }
 function renderMine(){
-  const a=loadProjects(),box=$('mineList');$('mine').hidden=!a.length;$('mineBtn').hidden=!a.length;box.innerHTML='';
+  const a=loadProjects(),box=$('mineList');$('mineBtn').hidden=!a.length;$('newBtn').hidden=!a.length;$('backupBtn').hidden=!a.length;box.innerHTML='';
+  if(!a.length){const p=document.createElement('p');p.className='note';p.textContent='Todavía no tienes bordados guardados. Sube una foto y aquí aparece.';box.appendChild(p)}
   a.forEach(p=>{
     const card=document.createElement('figure');card.className='res proj';card.style.margin='0';
     const cur=S.proj&&S.proj.id===p.id;if(cur)card.classList.add('sel');
@@ -1497,9 +1534,28 @@ function renderMine(){
     open.onclick=()=>{go('patron');if(!cur)openProject(p)};
     const del=document.createElement('button');del.type='button';del.className='btn danger';del.textContent='Quitar';let arm=false;
     del.onclick=()=>{if(!arm){arm=true;del.textContent='¿Seguro?';setTimeout(()=>{arm=false;del.textContent='Quitar'},3000);return}
-      saveProjects(loadProjects().filter(x=>x.id!==p.id));if(cur)S.proj=null;renderMine();toast('Bordado quitado')};
+      deleteProject(p.id);if(cur)S.proj=null;renderMine();toast('Bordado quitado')};
     row.append(open,del);card.append(img,h,info,row);box.appendChild(card)});
 }
+// ---------- Copia de seguridad ----------
+async function offerFile(fname,blob){
+  const direct=()=>{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);return 'saved'};
+  const dl=await downloadsP;if(!dl)return direct();
+  try{const r=await dl.save({filename:fname,data:await blob.arrayBuffer()});return r&&r.status}
+  catch(e){const c=e&&e.code||'';if(/declin|cancel|denied/.test(c))return 'cancelled';return direct()}}
+$('backupBtn').onclick=async()=>{const a=loadProjects();if(!a.length)return;
+  const d=new Date(),f=`Hilo a Hilo copia ${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+  const st=await offerFile(f,new Blob([JSON.stringify({app:'hilo-a-hilo',version:1,fecha:d.toISOString(),proyectos:a})],{type:'application/json'}));
+  if(st==='saved')toast(`Copia guardada con ${a.length} bordado${a.length>1?'s':''}`)};
+$('restoreFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{let data;try{data=JSON.parse(rd.result)}catch(err){toast('Ese archivo no es una copia de Hilo a Hilo.');return}
+    const list=(data&&Array.isArray(data.proyectos)?data.proyectos:[]).filter(p=>p&&typeof p.id==='string'&&typeof p.name==='string'&&
+      ((p.kind==='photo'&&typeof p.photo==='string'&&/^data:image\//.test(p.photo))||(p.kind==='design'&&p.design&&Array.isArray(p.design.rows))));
+    if(!list.length){toast('No encontré bordados en ese archivo.');return}
+    let n=0;list.forEach(p=>{const cur=PROJ.find(x=>x.id===p.id);if(!cur||(p.updated||0)>(cur.updated||0)){saveProject(p);n++}});
+    PROJ.sort((a,b)=>(b.updated||0)-(a.updated||0));renderMine();
+    toast(n?`Recuperé ${n} bordado${n>1?'s':''}`:'Ya tenías todos esos bordados')};
+  rd.readAsText(f)};
 $('newBtn').onclick=()=>{$('s1').scrollIntoView({block:'start'});setTimeout(()=>{if(!$('searchForm').hidden)$('q').focus()},400)};
 
 // ---------- Letra grande ----------
@@ -1516,10 +1572,12 @@ window.addEventListener('resize',()=>{drawBorder();clearTimeout(rsT);rsT=setTime
   fitCell(true);drawScreen();centerChart();if(S.tab==='ajustes')drawPreview();
 },200)});
 if(store('hilo-big')==='1')setBig(true);
-const saved=loadProjects();
-if(saved.length){go('patron',true);openProject(saved[0]);toast('Seguimos con: '+saved[0].name)}
-else{const smp=sampleImage();S.src=smp;$('thumb').src=smp.toDataURL();process()}
-renderMine();
+initStore().then(()=>{
+  const saved=loadProjects();
+  if(saved.length){go('patron',true);openProject(saved[0]);toast('Seguimos con: '+saved[0].name)}
+  else{const smp=sampleImage();S.src=smp;$('thumb').src=smp.toDataURL();process()}
+  renderMine();
+});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawScreen()});
 </script>
 

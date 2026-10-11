@@ -36,7 +36,8 @@ Más adelante se pueden conectar a una opción gratuita, como Gemini.
 - Es **un solo archivo**: `index.html`, con HTML, CSS y JavaScript sin dependencias que instalar. El PDF se genera con [jsPDF](https://github.com/parallax/jsPDF), cargado desde cdnjs.
 - Los colores se comparan en espacio de color **Lab** contra una paleta DMC aproximada, y se agrupan con *k-means*.
 - Se adapta a celular, tablet y computadora.
-- *Mis bordados* y el avance se guardan en el navegador (`localStorage`), en el mismo teléfono o computadora.
+- *Mis bordados* (foto, ajustes, letras y avance) se guardan en la base de datos del navegador (**IndexedDB**), en el mismo teléfono o computadora: no se pierden al recargar ni al cerrar la página. La app pide almacenamiento persistente para que el navegador no los borre por falta de espacio.
+- **Copia de seguridad:** en *Mis bordados*, "Guardar copia de seguridad" descarga un archivo `.json` con todos los bordados; "Recuperar una copia" los trae de vuelta en otro teléfono o después de borrar el navegador.
 
 ## Probarla en tu computadora
 
