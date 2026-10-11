@@ -25,17 +25,11 @@ Las letras chicas de una imagen se vuelven manchas al convertirlas en puntadas. 
 - Si las letras salen de un color parecido a la tela, la app usa un tono más oscuro (o más claro) del mismo color para que contrasten.
 - Cada texto se puede agrandar, achicar, subir, bajar o quitar.
 
-### Asistente con Claude (solo dentro de claude.ai)
+### Buscador y asistente con IA (apagados por ahora)
 
-Cuando la página se abre como *artifact* en claude.ai, se activan además:
+El código ya trae un **buscador de diseños** y un **asistente que lee la imagen** en 3 pasos (mira la imagen completa, revisa las letras una por una y comprueba que se lean en el bordado). Están **apagados**: la app no usa ninguna cuenta ni clave de API, así que esas secciones no aparecen y todo lo demás funciona igual.
 
-- **Buscador de diseños**: escribes un tema ("colibrí", "rosas") y Claude dibuja 4 diseños originales en punto de cruz.
-- **Asistente que lee tu imagen** en 3 pasos:
-  1. Mira la imagen completa en alta resolución.
-  2. Revisa las letras una por una, con acercamientos a cada renglón o arco de texto.
-  3. Comprueba que las letras se lean en el bordado terminado y, si no, agranda el bordado y las letras y vuelve a revisar.
-
-Estas funciones usan la cuenta de Claude de quien abre la página, no una clave de API. Fuera de claude.ai (por ejemplo en Vercel) se esconden solas y todo lo demás funciona igual.
+Más adelante se pueden conectar a una opción gratuita, como Gemini.
 
 ## Cómo está hecha
 

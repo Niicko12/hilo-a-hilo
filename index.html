@@ -285,7 +285,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
 
     <section class="card" aria-labelledby="s1">
       <div class="step"><b>1</b><h2 id="s1">Escoge qué bordar</h2></div>
-      <div class="group">
+      <div class="group" id="searchGroup">
         <p class="lbl" id="searchLbl">Busca un diseño</p>
         <form id="searchForm" class="search" role="search">
           <label for="q" class="sr">Qué quieres bordar</label>
@@ -300,7 +300,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
           <button class="btn small danger" type="button" id="stopBtn" hidden>Detener</button>
         </div>
       </div>
-      <div class="or"><span>o usa una foto tuya</span></div>
+      <div class="or" id="orLine"><span>o usa una foto tuya</span></div>
       <div class="group">
         <div class="src">
           <img id="thumb" alt="Imagen original">
@@ -1119,8 +1119,8 @@ let searchCtl=null,lastQ='';
 ['Perro','Gato','Rosas','Colibrí','Corazón','Mariposa','Girasol','Alcatraces'].forEach(t=>{
   const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;
   b.onclick=()=>{$('q').value=t;runSearch(false)};$('ideas').appendChild(b)});
-samplePromise.then(fn=>{if(!fn){$('searchForm').hidden=true;$('ideas').hidden=true;$('searchLbl').hidden=true;
-  $('searchStatus').textContent='El buscador de diseños funciona al abrir esta página dentro de Claude. Mientras tanto, sube una foto abajo.'}});
+// sin buscador disponible: queda solo "subir foto", sin avisos
+samplePromise.then(fn=>{if(!fn){['searchGroup','orLine'].forEach(id=>$(id).hidden=true)}});
 
 function promptFor(q,again){return `Eres una diseñadora experta en patrones de punto de cruz. Crea 4 diseños ORIGINALES y distintos entre sí sobre el tema: "${q}".
 Reglas:
