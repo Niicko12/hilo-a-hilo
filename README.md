@@ -23,7 +23,17 @@ Las letras chicas de una imagen se vuelven manchas al convertirlas en puntadas. 
 
 - En **Ajustes → Letras de tu imagen → Agregar letras a mano** escribes el texto y escoges dónde va (en curva arriba o abajo, o en renglón). La app borra las letras borrosas y las vuelve a escribir con un **abecedario de punto de cruz** de 7 cuadritos de alto, con acentos y Ñ.
 - Si las letras salen de un color parecido a la tela, la app usa un tono más oscuro (o más claro) del mismo color para que contrasten.
-- Cada texto se puede agrandar, achicar, subir, bajar o quitar.
+- **Muestrario de estilos de letra:** más de 35 estilos, cada uno mostrado con el texto que escribiste. Hay 4 de cuadritos (Clásica, Gruesa, Inclinada, Chica) y tipografías de Google Fonts convertidas a puntadas: cursivas (Dancing Script, Great Vibes, Pacifico, Lobster…), elegantes, divertidas, de molde y antiguas. Las cursivas finas usan más cuadritos de alto para que se lean.
+- **Mover las letras** arrastrándolas en "Cómo se verá": con el mouse directo, o en el celular tocando "✋ Mover las letras" y arrastrando con el dedo. También hay flechas ← ↑ ↓ →.
+- Cada texto se puede agrandar, achicar o quitar.
+- Si el fondo se borda, las letras nuevas se escriben encima sin dejar huecos de tela.
+
+### Compartir por WhatsApp
+
+- En "Cómo se verá": manda una imagen del bordado terminado con su nombre y medidas.
+- En "Imprimir": manda el patrón en PDF.
+
+En el celular se abre el menú de compartir del teléfono (con WhatsApp). Si el aparato no deja compartir archivos, el archivo se guarda y se abre WhatsApp con un mensaje listo para adjuntarlo.
 
 ### Buscador y asistente con IA (apagados por ahora)
 

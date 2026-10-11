@@ -3,6 +3,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Lobster&family=Kaushan+Script&family=Courgette&family=Cookie&family=Satisfy&family=Great+Vibes&family=Parisienne&family=Allura&family=Sacramento&family=Yellowtail&family=Playfair+Display:wght@700&family=Cinzel:wght@700&family=Abril+Fatface&family=Cormorant+Garamond:wght@700&family=Lora:wght@700&family=Fredoka:wght@600&family=Chewy&family=Bangers&family=Luckiest+Guy&family=Baloo+2:wght@800&family=Bubblegum+Sans&family=Comic+Neue:wght@700&family=Montserrat:wght@800&family=Oswald:wght@600&family=Bebas+Neue&family=Roboto+Slab:wght@700&family=Archivo+Black&family=Alfa+Slab+One&family=UnifrakturMaguntia&family=Pirata+One&family=MedievalSharp&display=swap">
 <style>
 /* Layout: una sola columna tipo cuaderno de labores; cada paso es una tarjeta, el patrón ocupa todo el ancho */
 :root{
@@ -69,7 +70,42 @@ select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 .switch{display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer}
 .switch input{width:22px;height:22px;accent-color:var(--ok)}
-#preview{display:block;max-width:100%;height:auto;border-radius:10px;margin:0 auto}
+#preview{display:block;max-width:100%;height:auto;border-radius:10px;margin:0 auto;touch-action:pan-y pinch-zoom}
+#preview.moving{touch-action:none;cursor:move;outline:3px dashed var(--rose);outline-offset:3px}
+.btn.whatsapp{background:#1F8F4E;border-color:#1F8F4E;color:#fff;min-height:52px}
+.btn.whatsapp .wa{width:24px;height:24px;fill:currentColor;flex:none}
+.movebar{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.movebar .btn[aria-pressed=true]{background:var(--ok);border-color:var(--ok);color:#fff}
+.stylecur{appearance:none;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;min-height:64px;text-align:left}
+.stylecur:focus-visible,.fontcard:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+.scurtxt{display:flex;flex-direction:column;line-height:1.2}.scurtxt small{color:var(--muted);font-size:.8em}
+.scurgo{color:var(--accent);font-weight:700;white-space:nowrap}
+.sample{font-size:1.5rem;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.sample img{height:24px;width:auto;image-rendering:pixelated;background:#fff;border-radius:4px;padding:2px;display:block}
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,20,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheetbox{background:var(--bg);width:100%;max-width:900px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px}
+@media (min-width:768px){.sheet{align-items:center}.sheetbox{border-radius:18px;max-height:84vh}}
+.sheethead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-16px;background:var(--bg);padding-block:6px;z-index:1}
+.sheethead h2{margin:0;font-size:1.25rem}
+.sheetbox h3{margin:14px 0 0;font-size:1.1rem}
+.fontgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:6px}
+.fontcard{appearance:none;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:84px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;text-align:left;min-width:0}
+.fontcard .sample{font-size:1.65rem;max-width:100%}
+.fontcard small{color:var(--muted);font-size:.85rem}
+.fontcard[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+body.noscroll{overflow:hidden}
+.ctrlrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ctrl{display:flex;flex-direction:column;gap:6px}
+.ctrl .lbl{margin:0}
+.pair,.pad{display:grid;gap:6px}
+.pair{grid-template-columns:1fr 1fr}
+.pad{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pair .btn,.pad .btn{min-height:48px;padding:8px 6px}
+.pad .btn{font-size:1.3rem}
+.titem .btn.danger{align-self:flex-start}
+@media (max-width:420px){.styles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -416,6 +452,10 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
       <section class="card preview" id="p-vista" aria-labelledby="vH">
         <div class="step"><h2 id="vH">Cómo se verá</h2></div>
         <p class="hint">Así quedaría bordado sobre la tela que elegiste.</p>
+        <div class="movebar" id="moveBar" hidden>
+          <button class="btn primary" type="button" id="moveBtn" aria-pressed="false">✋ Mover las letras</button>
+          <p class="note" id="moveHint"></p>
+        </div>
         <canvas id="preview"></canvas>
         <div class="facts" aria-live="polite">
           <div><span>Medida bordada</span><strong id="fSize">–</strong></div>
@@ -423,6 +463,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
           <div><span>Puntadas</span><strong id="fSt">–</strong></div>
           <div><span>Madejas</span><strong id="fSk">–</strong></div>
         </div>
+        <button class="btn whatsapp" type="button" id="shareImgBtn"><svg class="wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg>Compartir por WhatsApp</button>
       </section>
     </div>
     <div class="next"><button class="btn primary" type="button" data-go="patron">Siguiente: ver el patrón →</button></div>
@@ -495,10 +536,19 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
     </div>
     <label class="check"><input type="checkbox" id="pagesBW"><span>Hojas en blanco y negro (solo símbolos, ahorra tinta)</span></label>
     <button class="btn primary" type="button" id="pdfBtn">Descargar PDF tamaño carta</button>
+    <button class="btn whatsapp" type="button" id="sharePdfBtn"><svg class="wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg>Enviar el patrón por WhatsApp</button>
     <p class="hint" id="pgHint">Guarda el PDF y mándalo a imprimir en hoja carta. También puedes mantener el dedo sobre la imagen para guardarla.</p>
     <p class="note" id="pgNote"></p>
     <div class="pages" id="pages"></div>
   </section>
+</div>
+
+<div class="sheet" id="styleSheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetH">
+  <div class="sheetbox">
+    <div class="sheethead"><h2 id="sheetH">Escoge el estilo de letra</h2><button class="btn small" type="button" id="sheetClose">✕ Cerrar</button></div>
+    <p class="note">Así se ven con tus letras. Toca el que más te guste.</p>
+    <div id="sheetBody"></div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -634,6 +684,12 @@ function process(){
       for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr<0||cc<0||rr>=rows||cc>=cols)continue;const nb=copy[rr*cols+cc];if(nb===v)same++;else if(nb>=0)cnt[nb]=(cnt[nb]||0)+1}
       if(!same){let b=-1,bn=0;for(const k in cnt)if(cnt[k]>bn){bn=cnt[k];b=+k}if(b>=0)grid[i]=b}}
   }
+  // el patrón sin letras se guarda aparte: así mover o cambiar las letras es instantáneo
+  S.base={grid:grid.slice(),chosen:chosen.slice(),cols,rows};
+  finishGrid(grid,chosen,cols,rows,false);
+}
+function finishGrid(grid,chosen,cols,rows,light){
+  const N=cols*rows;
   applyTexts(grid,chosen,cols,rows);
   const counts=new Array(chosen.length).fill(0);for(let i=0;i<N;i++)if(grid[i]>=0)counts[grid[i]]++;
   const order=chosen.map((d,k)=>k).filter(k=>counts[k]>0).sort((a,b)=>counts[b]-counts[a]);
@@ -641,8 +697,10 @@ function process(){
   for(let i=0;i<N;i++)if(grid[i]>=0)grid[i]=remap[grid[i]];
   S.pal=order.map((k,n)=>Object.assign({},chosen[k],{count:counts[k],sym:SYMBOLS[n%SYMBOLS.length]}));
   S.cols=cols;S.rows=rows;S.grid=grid;
-  afterProcess();
+  if(light)drawPreview();else afterProcess();
 }
+// vuelve a poner solo las letras (light: mientras se arrastran, solo se redibuja la vista)
+function retext(light){if(!S.base)return process();const b=S.base;finishGrid(b.grid.slice(),b.chosen.slice(),b.cols,b.rows,light)}
 
 // ---------- Letras rehechas con abecedario de punto de cruz ----------
 // Abecedario de punto de cruz (5 × 7 cuadritos, como los de las revistas)
@@ -671,8 +729,9 @@ Y:['#...#','#...#','.#.#.','..#..','..#..','..#..','..#..'],Z:['#####','....#','
 ':':['.','#','.','.','.','#','.'],"'":['#','#','.','.','.','.','.'],'#':['.#.#.','.#.#.','#####','.#.#.','#####','.#.#.','.#.#.']};
 const MARKS={'Á':['A',['..#','.#.']],'É':['E',['..#','.#.']],'Í':['I',['..#','.#.']],'Ó':['O',['..#','.#.']],'Ú':['U',['..#','.#.']],
   'Ü':['U',['#.#']],'Ñ':['N',['.##.#','#..#.']]};
-function stampGlyph(grid,cols,rows,g,x0,y0,s,ci){
-  const put=(gx,gy)=>{for(let a=0;a<s;a++)for(let b=0;b<s;b++){const X=x0+gx*s+a,Y=y0+gy*s+b;if(X>=0&&Y>=0&&X<cols&&Y<rows)grid[Y*cols+X]=ci}};
+function stampGlyph(grid,cols,rows,g,x0,y0,s,ci,box){
+  const put=(gx,gy)=>{for(let a=0;a<s;a++)for(let b=0;b<s;b++){const X=x0+gx*s+a,Y=y0+gy*s+b;if(X>=0&&Y>=0&&X<cols&&Y<rows){grid[Y*cols+X]=ci;
+    if(box){if(X<box.x0)box.x0=X;if(X>box.x1)box.x1=X;if(Y<box.y0)box.y0=Y;if(Y>box.y1)box.y1=Y}}}};
   g.rows.forEach((row,gy)=>{for(let gx=0;gx<row.length;gx++)if(row[gx]==='#')put(gx,gy)});
   if(g.mark){const mw=g.mark[0].length,off=Math.floor((g.w-mw)/2);g.mark.forEach((row,i)=>{for(let gx=0;gx<row.length;gx++)if(row[gx]==='#')put(off+gx,i-g.mark.length-1)})}
 }
@@ -696,12 +755,53 @@ function glyphFor(ch,small){
   const g=G[ch]||G[ch.normalize('NFD').replace(/[̀-ͯ]/g,'')]||G['?'];
   return {rows:g,w:g[0].length,space:false,mark};
 }
-function textLayout(text,small,s){const gl=[...text].map(c=>glyphFor(c,small));
-  const total=gl.reduce((a,g)=>a+(g.space?(g.w+1)*s:(g.w+1)*s),0)-s;return {gl,total,h:(small?5:7)*s}}
-function textColorIndex(t,chosen,tl){
-  // color elegido por mamá, o uno automático que se vea sobre la tela
+// Estilos de letra: se sacan del abecedario base
+const STYLES=[['clasica','Clásica'],['gruesa','Gruesa'],['inclinada','Inclinada'],['chica','Chica']];
+function styleGlyph(g,style,H){
+  if(g.space)return g;
+  // negrita: cada trazo crece un cuadrito a la derecha, sin tapar los huecos entre trazos (así la M sigue siendo M)
+  if(style==='gruesa'){const th=r=>[...(r+'.')].map((c,j)=>c==='#'||(j>0&&r[j-1]==='#'&&r[j+1]!=='#')?'#':'.').join('');
+    return Object.assign({},g,{rows:g.rows.map(th),w:g.w+1,mark:g.mark&&g.mark.map(th)})}
+  if(style==='inclinada'){const sh=i=>Math.round((H-1-i)*2/(H-1));
+    return Object.assign({},g,{rows:g.rows.map((r,i)=>'.'.repeat(sh(i))+r+'.'.repeat(2-sh(i))),w:g.w+2,mark:g.mark&&g.mark.map(r=>'..'+r)})}
+  return g}
+function textLayout(text,small,s,style){const gl=[...text].map(c=>styleGlyph(glyphFor(c,small),style||'clasica',small?5:7));
+  const total=gl.reduce((a,g)=>a+(g.w+1)*s,0)-s;return {gl,total,h:(small?5:7)*s}}
+// ---------- Tipografías de verdad (cursivas, elegantes...) convertidas a cuadritos ----------
+const FONTS=[{"k": "dancing", "name": "Dancing Script", "fam": "Dancing Script", "w": 700, "cat": "Cursivas", "min": 14, "th": 0.4}, {"k": "pacifico", "name": "Pacifico", "fam": "Pacifico", "w": 400, "cat": "Cursivas", "min": 14, "th": 0.4}, {"k": "lobster", "name": "Lobster", "fam": "Lobster", "w": 400, "cat": "Cursivas", "min": 13, "th": 0.4}, {"k": "kaushan", "name": "Kaushan Script", "fam": "Kaushan Script", "w": 400, "cat": "Cursivas", "min": 14, "th": 0.38}, {"k": "courgette", "name": "Courgette", "fam": "Courgette", "w": 400, "cat": "Cursivas", "min": 13, "th": 0.4}, {"k": "cookie", "name": "Cookie", "fam": "Cookie", "w": 400, "cat": "Cursivas", "min": 16, "th": 0.35}, {"k": "satisfy", "name": "Satisfy", "fam": "Satisfy", "w": 400, "cat": "Cursivas", "min": 16, "th": 0.33}, {"k": "greatvibes", "name": "Great Vibes", "fam": "Great Vibes", "w": 400, "cat": "Cursivas", "min": 18, "th": 0.3}, {"k": "parisienne", "name": "Parisienne", "fam": "Parisienne", "w": 400, "cat": "Cursivas", "min": 18, "th": 0.3}, {"k": "allura", "name": "Allura", "fam": "Allura", "w": 400, "cat": "Cursivas", "min": 18, "th": 0.3}, {"k": "sacramento", "name": "Sacramento", "fam": "Sacramento", "w": 400, "cat": "Cursivas", "min": 20, "th": 0.28}, {"k": "yellowtail", "name": "Yellowtail", "fam": "Yellowtail", "w": 400, "cat": "Cursivas", "min": 16, "th": 0.33}, {"k": "playfair", "name": "Playfair Display", "fam": "Playfair Display", "w": 700, "cat": "Elegantes", "min": 11, "th": 0.42}, {"k": "cinzel", "name": "Cinzel", "fam": "Cinzel", "w": 700, "cat": "Elegantes", "min": 10, "th": 0.42}, {"k": "abril", "name": "Abril Fatface", "fam": "Abril Fatface", "w": 400, "cat": "Elegantes", "min": 11, "th": 0.42}, {"k": "cormorant", "name": "Cormorant", "fam": "Cormorant Garamond", "w": 700, "cat": "Elegantes", "min": 13, "th": 0.38}, {"k": "lora", "name": "Lora", "fam": "Lora", "w": 700, "cat": "Elegantes", "min": 11, "th": 0.42}, {"k": "fredoka", "name": "Fredoka", "fam": "Fredoka", "w": 600, "cat": "Divertidas", "min": 10, "th": 0.42}, {"k": "chewy", "name": "Chewy", "fam": "Chewy", "w": 400, "cat": "Divertidas", "min": 10, "th": 0.42}, {"k": "bangers", "name": "Bangers", "fam": "Bangers", "w": 400, "cat": "Divertidas", "min": 10, "th": 0.42}, {"k": "luckiest", "name": "Luckiest Guy", "fam": "Luckiest Guy", "w": 400, "cat": "Divertidas", "min": 10, "th": 0.42}, {"k": "baloo", "name": "Baloo", "fam": "Baloo 2", "w": 800, "cat": "Divertidas", "min": 10, "th": 0.42}, {"k": "bubblegum", "name": "Bubblegum", "fam": "Bubblegum Sans", "w": 400, "cat": "Divertidas", "min": 11, "th": 0.42}, {"k": "comic", "name": "Comic", "fam": "Comic Neue", "w": 700, "cat": "Divertidas", "min": 11, "th": 0.42}, {"k": "montserrat", "name": "Montserrat", "fam": "Montserrat", "w": 800, "cat": "De molde", "min": 9, "th": 0.42}, {"k": "oswald", "name": "Oswald", "fam": "Oswald", "w": 600, "cat": "De molde", "min": 9, "th": 0.42}, {"k": "bebas", "name": "Bebas Neue", "fam": "Bebas Neue", "w": 400, "cat": "De molde", "min": 9, "th": 0.42}, {"k": "robotoslab", "name": "Roboto Slab", "fam": "Roboto Slab", "w": 700, "cat": "De molde", "min": 10, "th": 0.42}, {"k": "archivo", "name": "Archivo Black", "fam": "Archivo Black", "w": 400, "cat": "De molde", "min": 9, "th": 0.42}, {"k": "alfaslab", "name": "Alfa Slab", "fam": "Alfa Slab One", "w": 400, "cat": "De molde", "min": 9, "th": 0.42}, {"k": "fraktur", "name": "Gótica", "fam": "UnifrakturMaguntia", "w": 400, "cat": "Antiguas", "min": 14, "th": 0.38}, {"k": "pirata", "name": "Pirata", "fam": "Pirata One", "w": 400, "cat": "Antiguas", "min": 12, "th": 0.4}, {"k": "medieval", "name": "Medieval", "fam": "MedievalSharp", "w": 400, "cat": "Antiguas", "min": 12, "th": 0.4}];
+const FONT=Object.fromEntries(FONTS.map(f=>[f.k,f]));
+const FCACHE=new Map(),FLOADED=new Set(),FLOADING=new Set();
+function fontReady(f){if(FLOADED.has(f.k))return true;
+  if(!FLOADING.has(f.k)&&document.fonts&&document.fonts.load){FLOADING.add(f.k);
+    document.fonts.load(`${f.w} 40px "${f.fam}"`,'AaÁñ').then(()=>{FLOADED.add(f.k);FCACHE.clear();if(S.proj&&S.proj.texts&&S.proj.texts.some(t=>t.estilo===f.k))retext(false)}).catch(()=>{FLOADED.add(f.k)})}
+  return false}
+// dibuja el texto grande en un lienzo y marca los cuadritos que quedan con tinta
+function fontRows(str,f,H,advance){
+  const key=f.k+'|'+H+'|'+(advance?1:0)+'|'+str;if(FCACHE.has(key))return FCACHE.get(key);
+  const P=Math.max(48,H*8),x=document.createElement('canvas').getContext('2d',{willReadFrequently:true});
+  const font=`${f.w} ${P}px "${f.fam}", cursive`;x.font=font;
+  const ref=x.measureText('ÁHÑgjy'),asc=ref.actualBoundingBoxAscent,desc=ref.actualBoundingBoxDescent,c=(asc+desc)/H;
+  const m=x.measureText(str),left=advance?0:Math.ceil(m.actualBoundingBoxLeft),right=advance?m.width:Math.ceil(m.actualBoundingBoxRight);
+  const w=Math.max(1,Math.ceil((left+right)/c)),cv=x.canvas;cv.width=Math.ceil(w*c);cv.height=Math.ceil(H*c);
+  x.font=font;x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.fillStyle='#000';x.textBaseline='alphabetic';x.fillText(str,left,asc);
+  const d=x.getImageData(0,0,cv.width,cv.height).data,rows=[];
+  for(let gy=0;gy<H;gy++){let row='';for(let gx=0;gx<w;gx++){let ink=0,n=0;
+      const ya=Math.floor(gy*c),yb=Math.min(cv.height,Math.floor((gy+1)*c)),xa=Math.floor(gx*c),xb=Math.min(cv.width,Math.floor((gx+1)*c));
+      for(let yy=ya;yy<yb;yy+=2)for(let xx=xa;xx<xb;xx+=2){n++;if(d[(yy*cv.width+xx)*4]<128)ink++}
+      row+=n&&ink/n>=f.th?'#':'.'}rows.push(row)}
+  // se quitan columnas vacías de las orillas (en renglón derecho)
+  let a=0,b=w-1;if(!advance){while(a<b&&rows.every(r=>r[a]==='.'))a++;while(b>a&&rows.every(r=>r[b]==='.'))b--}
+  const out={rows:rows.map(r=>r.slice(a,b+1)),w:b-a+1};FCACHE.set(key,out);return out}
+function fontLayout(text,f,H,perChar){
+  fontReady(f);let gl;
+  if(!perChar){const g=fontRows(text,f,H,false);gl=[{rows:g.rows,w:g.w,space:false,mark:null,gap:0}]}
+  else gl=[...text].map(ch=>{if(ch===' ')return {rows:[],w:Math.max(2,Math.round(H*.3)),space:true,mark:null,gap:0};
+    const g=fontRows(ch,f,H,true);return {rows:g.rows,w:g.w,space:false,mark:null,gap:0}});
+  return {gl,total:gl.reduce((a,g)=>a+g.w,0),h:H}}
+function textColorIndex(t,chosen,tl,around){
+  // color elegido por mamá, o uno automático que se vea sobre lo que rodea a las letras (el fondo bordado o la tela)
   if(t.code){const d=DMC.find(x=>x.code===t.code);if(d){let i=chosen.findIndex(c=>c.code===d.code);if(i<0){chosen.push(d);i=chosen.length-1}return i}}
-  const fab=rgb2lab(...hex2rgb($('fabric').value.slice(1)));
+  const fab=around||rgb2lab(...hex2rgb($('fabric').value.slice(1)));
   let best=null,bd=Infinity;DMC.forEach(d=>{const z=d2(tl,d.lab);if(z<bd){bd=z;best=d}});
   if(d2(best.lab,fab)<900){ // casi del color de la tela: se usa el color del diseño que más contrasta
     let alt=null,ad=-1;chosen.forEach(c=>{if(S.removed.has(c.code))return;const z=d2(c.lab,fab);if(z>ad){ad=z;alt=c}});
@@ -714,23 +814,24 @@ function textColorIndex(t,chosen,tl){
   let i=chosen.findIndex(c=>c.code===best.code);if(i<0){chosen.push(best);i=chosen.length-1}return i;
 }
 function applyTexts(grid,chosen,cols,rows){
-  S.textNotes=[];S.textColors=[];
+  S.textNotes=[];S.textColors=[];S.textBoxes=[];
   const items=(S.proj&&!S.fromDesign&&S.proj.texts)||[];
   if(!items.length||!$('textfix').checked)return;
   items.forEach((t,ti)=>{
-    const text=t.texto.toUpperCase().trim();if(!text){S.textNotes[ti]=null;return}
+    const text=(FONT[t.estilo]?t.texto:t.texto.toUpperCase()).trim();if(!text){S.textNotes[ti]=null;return}
     let cx=t.cx*cols,cy=t.cy*rows;const hA=Math.max(3,t.alto*cols);
-    if(t.manual&&!t.colorFixed){const cnt=new Map(),r0=t.radio*cols,hw=t.ancho*cols/2;
-      for(let i=0;i<grid.length;i++){const v=grid[i];if(v<0)continue;const X=i%cols+.5,Y=((i/cols)|0)+.5;let inB;
+    if(t.manual&&t.cv!==2){const cnt=new Map(),r0=t.radio*cols,hw=t.ancho*cols/2;
+      for(let i=0;i<grid.length;i++){const v=grid[i];const X=i%cols+.5,Y=((i/cols)|0)+.5;let inB;
         if(t.forma==='recto')inB=Math.abs(Y-cy)<=hA*.9&&Math.abs(X-cx)<=hw;
         else inB=Math.abs(Math.hypot(X-cx,Y-cy)-r0)<=hA*1.2&&(t.forma==='arco_arriba'?Y<cy:Y>cy);
-        if(inB)cnt.set(v,(cnt.get(v)||0)+1)}
+        if(inB)cnt.set(v,(cnt.get(v)||0)+1)} // v=-1 es tela sin bordar
       const ord=[...cnt.entries()].sort((a,b)=>b[1]-a[1]);
-      // si casi todo es de un color, las letras son ese color sobre la tela; si no, el segundo color
-      const pick=ord.length>1&&ord[1][1]>=ord[0][1]*.12?ord[1][0]:ord.length?ord[0][0]:-1;
-      if(pick>=0){t.color=chosen[pick].hex;t.colorFixed=true}}
+      // letras viejas = el segundo color de la franja, si de verdad hay uno; si la franja es de un solo color, no hay nada que borrar
+      const sec=ord.length>1&&ord[1][1]>=ord[0][1]*.12?ord[1][0]:null;
+      t.cv=2;t.colorFixed=true;
+      if(sec!==null&&sec>=0){t.color=chosen[sec].hex;t.noErase=false}else{t.noErase=true;t.color='#808080'}}
     const tl=rgb2lab(...hex2rgb(t.color.slice(1)));
-    const isText=v=>v>=0&&d2(chosen[v].lab,tl)<700;
+    const isText=v=>!t.noErase&&v>=0&&d2(chosen[v].lab,tl)<700;
     const like=[];for(let i=0;i<grid.length;i++)if(isText(grid[i]))like.push(i);
     const isArc=t.forma!=='recto',top=t.forma==='arco_arriba';
     let r=t.radio*cols;
@@ -743,11 +844,19 @@ function applyTexts(grid,chosen,cols,rows){
     }
     const dy=t.dy||0;if(isArc)r=Math.max(6,top?r-dy:r+dy);else cy+=dy;
     // tamaño: abecedario grande si cabe; si no, el chico
-    const room=isArc?r*1.8:Math.max(t.ancho*cols*1.3,cols*.3);
-    let small=false,s=Math.min(3,Math.max(1,Math.round(hA/7)+(t.ds||0)));
-    let L=textLayout(text,false,s);
-    while(s>1&&L.total>room){s--;L=textLayout(text,false,s)}
-    if((t.ds||0)<0&&s===1||L.total>room){const Ls=textLayout(text,true,1);if(L.total>room||(t.ds||0)<0){small=true;L=Ls}}
+    const room=isArc?r*1.8:Math.max(t.ancho*cols*1.3,cols*.3),st=t.estilo||'clasica';
+    let small=st==='chica',s=Math.min(3,Math.max(1,Math.round(hA/(small?5:7))+(t.ds||0)));
+    let L;const F=FONT[st];
+    if(F){ // tipografía: se busca el alto más grande que quepa, sin bajar del mínimo para que se lea
+      small=false;s=1;let H=Math.min(48,Math.max(F.min,Math.round(hA*1.6)+2*(t.ds||0)));
+      L=fontLayout(text,F,H,isArc);while(H>F.min&&L.total>room){H--;L=fontLayout(text,F,H,isArc)}
+      S.textFit=S.textFit||[];S.textFit[ti]=L.total<=room*1.15;
+    }else{
+      L=textLayout(text,small,s,st);
+      while(s>1&&L.total>room){s--;L=textLayout(text,small,s,st)}
+      if(!small&&((t.ds||0)<0&&s===1||L.total>room)){const Ls=textLayout(text,true,1,st);if(L.total>room||(t.ds||0)<0){small=true;L=Ls}}
+      if(S.textFit)S.textFit[ti]=true;
+    }
     const h=L.h,total=L.total,half=total/2;
     // la curva: si el texto es más ancho que el círculo se aplana, conservando la punta
     const R=isArc?Math.max(r,half/0.85):0;
@@ -766,14 +875,15 @@ function applyTexts(grid,chosen,cols,rows){
       const ab=[fillLab[0]-tl[0],fillLab[1]-tl[1],fillLab[2]-tl[2]],ap=[p[0]-tl[0],p[1]-tl[1],p[2]-tl[2]];
       const LL=ab[0]**2+ab[1]**2+ab[2]**2||1,u=Math.max(0,Math.min(1,(ap[0]*ab[0]+ap[1]*ab[1]+ap[2]*ab[2])/LL));
       return d2(p,[tl[0]+ab[0]*u,tl[1]+ab[1]*u,tl[2]+ab[2]*u])<220};
-    for(const i of band){const v=grid[i];if(isText(v)||mixed(v))grid[i]=fill}
+    // se borran las letras viejas; si el fondo se borda, nunca se deja la tela al descubierto
+    if(!t.noErase&&(fill>=0||$('bgoff').checked))for(const i of band){const v=grid[i];if(isText(v)||mixed(v))grid[i]=fill}
     // letras nuevas, todas derechas y de izquierda a derecha
-    const ci=textColorIndex(t,chosen,tl);
+    const ci=textColorIndex(t,chosen,tl,fill>=0?chosen[fill].lab:null),OX=t.ox||0,OY=t.oy||0,box={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
     let pos=-half;
-    L.gl.forEach(g=>{const gw=g.w*s,mid=pos+gw/2;pos+=(g.w+1)*s;if(g.space)return;
-      const py=isArc?yAt(mid):cy;
-      stampGlyph(grid,cols,rows,g,Math.round(cx+mid-gw/2),Math.round(py-h/2),s,ci)});
-    S.textNotes[ti]={h,small};S.textColors[ti]=chosen[ci].code;
+    L.gl.forEach(g=>{const gw=g.w*s,mid=pos+gw/2;pos+=(g.w+(g.gap===undefined?1:g.gap))*s;if(g.space)return;
+      const py=(isArc?yAt(mid):cy)+OY;
+      stampGlyph(grid,cols,rows,g,Math.round(cx+OX+mid-gw/2),Math.round(py-h/2),s,ci,box)});
+    S.textNotes[ti]={h,small};S.textColors[ti]=chosen[ci].code;S.textBoxes[ti]=box.x1>=box.x0?box:null;
   });
 }
 function renderTexts(){
@@ -782,21 +892,33 @@ function renderTexts(){
   if(!items.length){box.innerHTML='';return}
   if(box.dataset.for!==S.proj.id||box.children.length!==items.length){
     box.innerHTML='';box.dataset.for=S.proj.id;
+    const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e};
+    const btn=(txt,label,fn,cls)=>{const b=el('button','btn'+(cls?' '+cls:''),txt);b.type='button';if(label)b.setAttribute('aria-label',label);b.onclick=fn;return b};
     items.forEach((t,i)=>{
-      const it=document.createElement('div');it.className='titem';
-      const inp=document.createElement('input');inp.type='text';inp.value=t.texto;inp.id='txt'+i;inp.setAttribute('aria-label','Texto '+(i+1));
-      let tm;inp.oninput=()=>{t.texto=inp.value.slice(0,40);clearTimeout(tm);tm=setTimeout(()=>{process()},500)};
-      const note=document.createElement('p');note.className='note';note.id='tnote'+i;
-      const btns=document.createElement('div');btns.className='tbtns';
-      [['A+ Más grandes',()=>t.ds=(t.ds||0)+1],['A− Más chicas',()=>t.ds=(t.ds||0)-1],['↑ Subir',()=>t.dy=(t.dy||0)-1],['↓ Bajar',()=>t.dy=(t.dy||0)+1],['✕ Quitar',()=>{items.splice(items.indexOf(t),1);box.dataset.for=''}]].forEach(([lb,fn])=>{
-        const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=lb;b.onclick=()=>{fn();process()};btns.appendChild(b)});
-      const tc=document.createElement('div');tc.className='chips';tc.id='tcol'+i;tc.style.alignItems='center';
-      it.append(inp,tc,note,btns);box.appendChild(it)});
+      const it=el('div','titem');
+      const head=el('label','lbl','Letras '+(i+1));head.htmlFor='txt'+i;
+      const inp=el('input');inp.type='text';inp.value=t.texto;inp.id='txt'+i;
+      let tm;inp.oninput=()=>{t.texto=inp.value.slice(0,40);clearTimeout(tm);tm=setTimeout(()=>{retext(false)},400)};
+      // estilo de letra, cada uno con su muestra
+      const sty=el('button','stylecur');sty.type='button';sty.id='scur'+i;sty.onclick=()=>openSheet(t);
+      const tc=el('div','chips');tc.id='tcol'+i;tc.style.alignItems='center';
+      // tamaño y mover
+      const row=el('div','ctrlrow');
+      const size=el('div','ctrl');size.append(el('p','lbl','Tamaño'));const sz=el('div','pair');
+      sz.append(btn('A− Más chicas','',()=>{t.ds=(t.ds||0)-1;retext(false)}),btn('A+ Más grandes','',()=>{t.ds=(t.ds||0)+1;retext(false)}));size.append(sz);
+      const mv=el('div','ctrl');mv.append(el('p','lbl','Mover'));const pad=el('div','pad');
+      const step=(dx,dy)=>()=>{t.ox=(t.ox||0)+dx;t.oy=(t.oy||0)+dy;retext(false)};
+      pad.append(btn('←','Mover a la izquierda',step(-1,0)),btn('↑','Subir',step(0,-1)),btn('↓','Bajar',step(0,1)),btn('→','Mover a la derecha',step(1,0)));mv.append(pad);
+      row.append(size,mv);
+      const note=el('p','note');note.id='tnote'+i;
+      const del=btn('✕ Quitar estas letras','',()=>{items.splice(items.indexOf(t),1);box.dataset.for='';retext(false)},'danger small');
+      it.append(head,inp,el('p','lbl','Estilo de letra'),sty,el('p','lbl','Color'),tc,row,note,del);box.appendChild(it)});
   }
   items.forEach((t,i)=>{const n=$('tnote'+i);if(!n)return;const info=S.textNotes&&S.textNotes[i];
-    n.textContent=!$('textfix').checked||!info?'':`Letras de ${info.h} cuadritos de alto${info.small?', con abecedario chico para que quepan':''}. Si algo está mal escrito, corrígelo arriba.`;
+    renderStyleCur($('scur'+i),t);
+    n.textContent=!$('textfix').checked||!info?'':(S.textFit&&S.textFit[i]===false?`Estas letras no caben bien con este tamaño de bordado. Escoge un tamaño más grande arriba o un estilo más angosto.`:
+      `Letras de ${info.h} cuadritos de alto${info.small?', con abecedario chico para que quepan':''}. Si algo está mal escrito, corrígelo arriba.`);
     const box=$('tcol'+i);if(!box)return;box.innerHTML='';box.hidden=!$('textfix').checked;
-    const lab=document.createElement('span');lab.className='note';lab.textContent='Color:';box.appendChild(lab);
     const opts=[{code:'',hex:null,name:'Automático'}];
     const seen=new Set();[...S.pal.map(p=>p.code),'310','B5200','321'].forEach(c=>{if(seen.has(c)||opts.length>8)return;seen.add(c);const d=DMC.find(x=>x.code===c);if(d)opts.push({code:d.code,hex:d.hex,name:d.name,light:d.light})});
     opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.className='chip';
@@ -804,7 +926,7 @@ function renderTexts(){
       if(o.hex){const sw=document.createElement('span');sw.className='sw';sw.style.background=o.hex;b.appendChild(sw);b.append(o.code)}
       else{b.style.paddingLeft='12px';b.textContent='Automático'+(on&&S.textColors&&S.textColors[i]?` (${S.textColors[i]})`:'')}
       b.setAttribute('aria-label',o.hex?`Letras en DMC ${o.code} ${o.name}`:'Color automático');
-      b.onclick=()=>{t.code=o.code;process()};box.appendChild(b)});
+      b.onclick=()=>{t.code=o.code;retext(false)};box.appendChild(b)});
   });
 }
 $('textfix').onchange=()=>{process();saveSoon()};
@@ -817,7 +939,45 @@ $('addTextBtn').onclick=()=>{const v=$('newText').value.trim();if(!v){$('newText
   S.proj.texts.push(Object.assign({texto:v.slice(0,40),radio:.35,alto:.07,ancho:.7,color:'#808080',ds:0,dy:0,manual:true},TPOS[newPos][2]));
   // que quepan las letras grandes
   const n=[...v].length,t=TPOS[newPos][2],room=t.forma==='recto'?.9:.35*1.8,w=Math.min(150,Math.max(+$('width').value,Math.ceil(n*6/room),Math.ceil(8/.07)));
-  $('width').value=w;$('widthOut').textContent=w;$('textfix').checked=true;$('newText').value='';process();saveSoon();toast('Letras agregadas. Revisa cómo se ven a la derecha.')};
+  $('width').value=w;$('widthOut').textContent=w;$('textfix').checked=true;$('newText').value='';process();saveSoon();
+  toast(matchMedia('(min-width:1000px)').matches?'Letras agregadas. Míralas a la derecha y arrástralas si quieres moverlas.':'Letras agregadas. Baja a “Cómo se verá” para verlas y moverlas.')};
+// muestra de cada estilo con las letras ABC
+// ---------- Muestrario de estilos de letra ----------
+const PIXEL_NAMES={clasica:'Clásica',gruesa:'Gruesa',inclinada:'Inclinada',chica:'Chica'};
+function styleName(k){return FONT[k]?FONT[k].name:PIXEL_NAMES[k]||'Clásica'}
+function sampleText(t){const v=(t&&t.texto||'').trim();return v?v.slice(0,18):'Te quiero mamá'}
+function renderStyleCur(b,t){if(!b)return;b.innerHTML='';const k=t.estilo||'clasica',f=FONT[k];
+  const prev=document.createElement('span');prev.className='sample';
+  if(f){prev.style.fontFamily=`"${f.fam}", cursive`;prev.style.fontWeight=f.w;prev.textContent=sampleText(t)}
+  else{const im=new Image();im.alt='';im.src=stylePreview(k);prev.appendChild(im)}
+  const tx=document.createElement('span');tx.className='scurtxt';tx.innerHTML='<small>Estilo de letra</small>';
+  const nm=document.createElement('strong');nm.textContent=styleName(k);tx.appendChild(nm);
+  const go=document.createElement('span');go.className='scurgo';go.textContent='Cambiar ›';b.append(tx,prev,go);
+  b.setAttribute('aria-label',`Estilo de letra: ${styleName(k)}. Toca para cambiarlo`)}
+let sheetFor=null,sheetBack=null;
+function openSheet(t){sheetFor=t;sheetBack=document.activeElement;const body=$('sheetBody');body.innerHTML='';const cur=t.estilo||'clasica',txt=sampleText(t);
+  const groups=[['Punto de cruz','Letras de cuadritos, las más fáciles de bordar',Object.keys(PIXEL_NAMES).map(k=>({k}))]];
+  ['Cursivas','Elegantes','Divertidas','De molde','Antiguas'].forEach(c=>groups.push([c,{Cursivas:'Letra de mano, con curvas',Elegantes:'Para invitaciones y regalos',Divertidas:'Para niños y cosas alegres','De molde':'Derechas y fáciles de leer',Antiguas:'Estilo de antes'}[c],FONTS.filter(f=>f.cat===c)]));
+  groups.forEach(([name,sub,list])=>{const h=document.createElement('h3');h.textContent=name;const p=document.createElement('p');p.className='note';p.textContent=sub;
+    const g=document.createElement('div');g.className='fontgrid';
+    list.forEach(({k})=>{const b=document.createElement('button');b.type='button';b.className='fontcard';b.setAttribute('aria-pressed',String(k===cur));
+      const sm=document.createElement('span');sm.className='sample';const f=FONT[k];
+      if(f){sm.style.fontFamily=`"${f.fam}", cursive`;sm.style.fontWeight=f.w;sm.textContent=txt;fontReady(f)}
+      else{const im=new Image();im.alt='';im.src=stylePreview(k);sm.appendChild(im)}
+      const nm=document.createElement('small');nm.textContent=styleName(k)+(f&&f.min>=16?' · necesita bordado grande':'');
+      b.append(sm,nm);b.onclick=()=>{sheetFor.estilo=k;closeSheet();retext(false);toast('Estilo: '+styleName(k))};g.appendChild(b)});
+    body.append(h,p,g)});
+  $('styleSheet').hidden=false;document.body.classList.add('noscroll');$('sheetClose').focus()}
+function closeSheet(){$('styleSheet').hidden=true;document.body.classList.remove('noscroll');if(sheetBack&&sheetBack.focus)sheetBack.focus()}
+$('sheetClose').onclick=closeSheet;
+$('styleSheet').addEventListener('click',e=>{if(e.target===$('styleSheet'))closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('styleSheet').hidden)closeSheet()});
+const stylePrevCache={};
+function stylePreview(k){if(stylePrevCache[k])return stylePrevCache[k];
+  const L=textLayout('ABC',k==='chica',1,k),c=4,pad=4,cv=document.createElement('canvas');cv.width=L.total*c+pad*2;cv.height=7*c+pad*2;
+  const x=cv.getContext('2d');x.fillStyle='#1C2333';const off=k==='chica'?c:0;let pos=0;
+  L.gl.forEach(g=>{g.rows.forEach((r,gy)=>{for(let gx=0;gx<r.length;gx++)if(r[gx]==='#')x.fillRect(pad+(pos+gx)*c,pad+off+gy*c,c-.5,c-.5)});pos+=g.w+1});
+  return stylePrevCache[k]=cv.toDataURL()}
 
 function hashGrid(){let h=2166136261;h^=S.cols;for(let i=0;i<S.grid.length;i++){h^=(S.grid[i]+2)*(S.pal[S.grid[i]]?parseInt(S.pal[S.grid[i]].code)||7:1);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
 
@@ -935,7 +1095,7 @@ function drawPreview(){
   const s=Math.max(3,Math.floor(maxW/(S.cols+6)));const pad=s*3;
   const W=S.cols*s+pad*2,H=S.rows*s+pad*2,dpr=Math.min(window.devicePixelRatio||1,2);
   cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';
-  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);S.pv={s,pad,W};
   const fab=$('fabric').value;x.fillStyle=fab;x.fillRect(0,0,W,H);
   const dark=fab==='#232323';
   if(s>=5){x.fillStyle=dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.09)';for(let r=0;r<=S.rows+6;r++)for(let c=0;c<=S.cols+6;c++)x.fillRect(c*s-1,r*s-1,2,2)}
@@ -945,7 +1105,44 @@ function drawPreview(){
     x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
     x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke();
   }
+  // recuadros alrededor de las letras mientras se mueven
+  const boxes=S.textBoxes||[],show=S.moveMode||drag||hoverText>=0;
+  if(show)boxes.forEach((b,i)=>{if(!b)return;const on=drag?drag.ti===i:hoverText===i;
+    x.save();x.setLineDash([6,4]);x.lineWidth=on?3:2;x.strokeStyle=on?'#C72B3B':'rgba(199,43,59,.6)';
+    x.strokeRect(pad+b.x0*s-4,pad+b.y0*s-4,(b.x1-b.x0+1)*s+8,(b.y1-b.y0+1)*s+8);x.restore()});
+  $('moveBar').hidden=!boxes.some(Boolean);
 }
+// ---------- Arrastrar las letras con el mouse o con el dedo ----------
+let drag=null,hoverText=-1,dragRaf=0;
+const finePointer=matchMedia('(pointer:fine)').matches;
+function setMoveMode(on){S.moveMode=on;$('preview').classList.toggle('moving',on);
+  $('moveBtn').setAttribute('aria-pressed',String(on));$('moveBtn').textContent=on?'✓ Listo, ya quedaron':'✋ Mover las letras';
+  $('moveHint').textContent=on?(finePointer?'Arrastra las letras con el mouse a donde quieras.':'Arrastra las letras con el dedo a donde quieras. Toca “Listo” al terminar.'):
+    (finePointer?'También puedes arrastrarlas directo con el mouse.':'Toca el botón y luego arrastra las letras con el dedo.');
+  drawPreview()}
+$('moveBtn').onclick=()=>setMoveMode(!S.moveMode);
+setMoveMode(false);
+function cellAt(e){const cv=$('preview'),r=cv.getBoundingClientRect(),k=S.pv.W/r.width;
+  return {c:((e.clientX-r.left)*k-S.pv.pad)/S.pv.s,r:((e.clientY-r.top)*k-S.pv.pad)/S.pv.s}}
+function textAt(p){const bs=S.textBoxes||[];let best=-1,bd=Infinity;
+  bs.forEach((b,i)=>{if(!b)return;const dx=Math.max(b.x0-p.c,0,p.c-b.x1-1),dy=Math.max(b.y0-p.r,0,p.r-b.y1-1),d=Math.hypot(dx,dy);if(d<bd){bd=d;best=i}});
+  return bd<=3?best:-1}
+$('preview').addEventListener('pointerdown',e=>{
+  if(!S.pv||!S.textBoxes||!S.textBoxes.length)return;
+  if(e.pointerType==='touch'&&!S.moveMode)return; // en celular solo con el botón, para no estorbar al bajar la página
+  const p=cellAt(e),ti=textAt(p);if(ti<0)return;
+  const t=S.proj.texts[ti];e.preventDefault();try{$('preview').setPointerCapture(e.pointerId)}catch(err){}
+  drag={ti,c0:p.c,r0:p.r,ox:t.ox||0,oy:t.oy||0,moved:false};drawPreview()});
+$('preview').addEventListener('pointermove',e=>{
+  if(!S.pv)return;const p=cellAt(e);
+  if(!drag){if(e.pointerType==='mouse'){const h=textAt(p);if(h!==hoverText){hoverText=h;$('preview').style.cursor=h>=0?'grab':'';drawPreview()}}return}
+  const t=S.proj.texts[drag.ti],nx=drag.ox+Math.round(p.c-drag.c0),ny=drag.oy+Math.round(p.r-drag.r0);
+  if(nx===(t.ox||0)&&ny===(t.oy||0))return;t.ox=nx;t.oy=ny;drag.moved=true;$('preview').style.cursor='grabbing';
+  if(!dragRaf)dragRaf=requestAnimationFrame(()=>{dragRaf=0;retext(true)})});
+function endDrag(){if(!drag)return;const moved=drag.moved;drag=null;if(dragRaf){cancelAnimationFrame(dragRaf);dragRaf=0}
+  $('preview').style.cursor=hoverText>=0?'grab':'';if(moved){retext(false);toast('Letras movidas')}else drawPreview()}
+$('preview').addEventListener('pointerup',endDrag);$('preview').addEventListener('pointercancel',endDrag);
+$('preview').addEventListener('pointerleave',()=>{if(!drag&&hoverText>=0){hoverText=-1;$('preview').style.cursor='';drawPreview()}});
 
 // ---------- Hilos ----------
 function listText(){
@@ -1039,6 +1236,19 @@ function letterSheet(){
 }
 const downloadsP=(window.claude&&window.claude.use)?window.claude.use('downloads').catch(()=>null):Promise.resolve(null);
 $('pgHint').textContent='Toca el botón para descargar el PDF y mándalo a imprimir en hoja carta. También puedes mantener el dedo sobre la imagen para guardarla.';
+function projName(){return ((S.proj&&S.proj.name)||'mi-bordado').replace(/[^\wáéíóúñü -]/gi,'').trim()||'mi-bordado'}
+function makePdf(){
+  if(!window.jspdf)return null;
+  buildPages();if(!S.pageCanvases||!S.pageCanvases.length)return null;
+  const {jsPDF}=window.jspdf;let doc=null;
+  S.pageCanvases.forEach(cv=>{
+    const land=cv.width>cv.height,pw=land?11:8.5,ph=land?8.5:11;
+    if(!doc)doc=new jsPDF({orientation:land?'landscape':'portrait',unit:'in',format:'letter'});else doc.addPage('letter',land?'landscape':'portrait');
+    const exact=Math.abs(cv.width/cv.height-pw/ph)<0.01,mg=exact?0:0.4,k=Math.min((pw-2*mg)/cv.width,(ph-2*mg)/cv.height),w=cv.width*k,h=cv.height*k;
+    doc.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(pw-w)/2,(ph-h)/2,w,h);
+  });
+  return doc;
+}
 $('pdfBtn').onclick=async()=>{
   const dl=await downloadsP;
   if(!window.jspdf){toast('No se pudo preparar el PDF. Revisa tu conexión.');return}
@@ -1062,6 +1272,40 @@ $('pdfBtn').onclick=async()=>{
   }catch(e){toast('No se pudo preparar el PDF.')}
   finally{b.disabled=false;b.textContent='Descargar PDF tamaño carta'}
 };
+// ---------- Compartir por WhatsApp ----------
+// En el celular abre el menú de compartir (ahí sale WhatsApp con el archivo ya puesto).
+// Si el aparato no deja compartir archivos, se guarda el archivo y se abre WhatsApp con el mensaje.
+async function shareWhatsApp(file,text){
+  try{if(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return}}
+  catch(e){if(e&&e.name==='AbortError')return}
+  const st=await offerFile(file.name,file);if(st!=='saved')return;
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
+  toast('Ya se guardó el archivo. En WhatsApp tócale al clip 📎 para mandarlo.');
+}
+// tarjeta bonita con el bordado terminado, su nombre y sus medidas
+function shareCard(){
+  const s=Math.max(4,Math.min(10,Math.floor(900/Math.max(S.cols,S.rows)))),pw=S.cols*s,ph=S.rows*s,W=Math.max(pw+120,720),top=130,H=top+ph+150;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');const F='"Atkinson Hyperlegible", system-ui, sans-serif';
+  x.fillStyle='#FBF8F2';x.fillRect(0,0,W,H);
+  x.fillStyle='#1C2333';x.textAlign='center';x.textBaseline='middle';x.font=`700 42px ${F}`;x.fillText((S.proj&&S.proj.name)||'Mi bordado',W/2,58);
+  x.fillStyle='#566079';x.font=`400 24px ${F}`;x.fillText('Bordado en punto de cruz',W/2,100);
+  const ox=(W-pw)/2,oy=top,fab=$('fabric').value;x.fillStyle=fab;x.fillRect(ox-s*3,oy-s*3,pw+s*6,ph+s*6);
+  x.lineCap='round';x.lineWidth=Math.max(1.2,s*.34);
+  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const p=S.grid[r*S.cols+c];if(p<0)continue;const hx=S.pal[p].hex,X=ox+c*s,Y=oy+r*s,q=s*.14;
+    x.strokeStyle=shade(hx,-.18);x.beginPath();x.moveTo(X+q,Y+s-q);x.lineTo(X+s-q,Y+q);x.stroke();
+    x.strokeStyle=shade(hx,.06);x.beginPath();x.moveTo(X+q,Y+q);x.lineTo(X+s-q,Y+s-q);x.stroke()}
+  const ct=+$('count').value;x.fillStyle='#1C2333';x.font=`700 26px ${F}`;
+  x.fillText(`${(S.cols/ct*2.54).toFixed(1)} × ${(S.rows/ct*2.54).toFixed(1)} cm · Aida ${ct} · ${S.pal.length} colores DMC`,W/2,oy+ph+s*3+52);
+  x.fillStyle='#C72B3B';x.font=`400 22px ${F}`;x.fillText('Hecho con Hilo a Hilo',W/2,oy+ph+s*3+98);
+  return new Promise(res=>cv.toBlob(res,'image/png'));
+}
+$('shareImgBtn').onclick=async()=>{if(!S.grid)return;const b=$('shareImgBtn');b.disabled=true;
+  try{const blob=await shareCard();await shareWhatsApp(new File([blob],`Bordado ${projName()}.png`,{type:'image/png'}),`Mira mi bordado: ${(S.proj&&S.proj.name)||'mi bordado'} 🧵`)}
+  catch(e){toast('No se pudo preparar la imagen.')}finally{b.disabled=false}};
+$('sharePdfBtn').onclick=async()=>{if(!window.jspdf){toast('No se pudo preparar el PDF. Revisa tu conexión.');return}
+  const b=$('sharePdfBtn');b.disabled=true;
+  try{const doc=makePdf();if(!doc)return;await shareWhatsApp(new File([doc.output('blob')],`Patrón ${projName()}.pdf`,{type:'application/pdf'}),`Patrón de punto de cruz: ${(S.proj&&S.proj.name)||'mi bordado'} 🧵`)}
+  catch(e){toast('No se pudo preparar el PDF.')}finally{b.disabled=false}};
 S.pageMode='one';
 function setPageMode(mode){S.pageMode=mode;$('pgOne').setAttribute('aria-pressed',String(mode==='one'));$('pgMany').setAttribute('aria-pressed',String(mode==='many'));S.pagesDirty=true;buildPages()}
 $('pgOne').onclick=()=>setPageMode('one');$('pgMany').onclick=()=>setPageMode('many');
