@@ -1,7 +1,7 @@
 // Hilo a Hilo sin internet.
 // La página se pide primero a internet (así llegan los cambios); si no hay conexión se usa la guardada.
 // jsPDF, las letras y los iconos se guardan la primera vez y después salen de la memoria del aparato.
-const V='hilo-v1';
+const V='hilo-v2';
 const CORE=['./','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon-32.png'];
 const JSPDF='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 const FONTS=[

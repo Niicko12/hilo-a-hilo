@@ -15,6 +15,13 @@
 2. **Tarea 005 (APK):** el autor tiene que decir con qué herramienta hizo el APK. Si las descargas o compartir fallan, generar uno nuevo con PWABuilder (https://www.pwabuilder.com, URL `https://hilo-a-hilo.vercel.app`), que ahora sí es posible porque la app ya es PWA. **Antes de desinstalar el APK viejo: Guardar copia de seguridad** (desinstalar borra los bordados).
 3. Ideas para después (competitive-analysis.md): línea de centro opcional, pespunte, conectar el buscador a una IA gratuita (Gemini).
 
+## 2026-10-17 — Sesión 3: repositorio público
+
+- Revisado antes de abrirlo: sin claves, fotos ni datos personales en el historial; los commits usan el correo noreply. Pruebas: 10/10.
+- Repositorio `Niicko12/hilo-a-hilo` ahora **público**, con licencia **MIT** (`LICENSE`).
+- README reescrito: para quién es, enlace a la app, capturas (`docs/capturas/`), cómo está hecha y un resumen en inglés.
+- `<html lang="es">` (para que Chrome no ofrezca traducir la página y los lectores de pantalla usen voz en español); `sw.js` sube a `hilo-v2`.
+
 ## 2026-10-11 — Sesión 2: mejoras v2 completas
 
 - **Rápida:** tabla sRGB→lineal, Lab en arreglo plano, flood fill sin arreglos temporales; patrón y vista bordada dibujados por color; el patrón escondido no se redibuja. Huellas (`S.key`) idénticas a las de antes, así que el avance guardado sigue valiendo.
