@@ -12,4 +12,5 @@ La app no usa la API de Claude ni la cuenta de Claude del autor de ningún modo:
 ## Consecuencias
 - Todo funciona sin cuentas ni costos.
 - Queda "Agregar letras a mano" como forma de corregir letras.
-- Si se conecta una IA en el futuro, tiene que ser gratuita (el autor sugirió Gemini) y requiere un ADR nuevo.
+- ~~Si se conecta una IA en el futuro, tiene que ser gratuita (el autor sugirió Gemini) y requiere un ADR nuevo.~~
+- **2026-10-17:** el autor decidió que no se agrega ninguna API, tampoco Gemini ni otra IA gratuita. El buscador y el asistente se quedan apagados.

@@ -8,7 +8,7 @@ App de punto de cruz hecha para la mamá del autor: convierte fotos en patrones 
 3. `docs/reference/technical-decisions.md`: cómo funciona por dentro y las reglas.
 
 ## Reglas que no se rompen
-- **Sin API de Claude ni cuenta de Claude** en la app: nada de backend, `ANTHROPIC_API_KEY` ni capability `sample` (ADR-0001). Si se conecta una IA, que sea gratuita (el autor sugirió Gemini) y con un ADR nuevo.
+- **Sin API de Claude ni cuenta de Claude** en la app: nada de backend, `ANTHROPIC_API_KEY` ni capability `sample` (ADR-0001). **Tampoco ninguna otra API** (ni Gemini ni otra IA): el autor lo decidió el 2026-10-17. No proponerlo.
 - **Los bordados y el avance de mamá son sagrados.** Si cambia la forma de los datos guardados, agregar conversión automática (como `progOf()`). Si se toca `process()`, el patrón debe salir idéntico (mismo `S.key`), o se invalida el avance guardado.
 - Todo lo que se ve, en **español sencillo**, con botones grandes.
 - El PDF y las hojas impresas, siempre en fondo blanco.
