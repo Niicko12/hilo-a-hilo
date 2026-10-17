@@ -511,6 +511,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
     </div>
     <div class="chartwrap" id="chartwrap"><canvas id="chart"></canvas></div>
     <p class="note">Las líneas gruesas marcan cada 10 cuadros. Los triángulos señalan el centro: dobla la tela en cuatro y empieza ahí.</p>
+    <label class="switch"><input type="checkbox" id="centerLine"> Mostrar la línea del centro</label>
     <div class="avance">
       <p class="lbl">Mi avance</p>
       <div class="markrow">
@@ -548,6 +549,7 @@ textarea{width:100%;min-height:160px;font:inherit;font-size:.95rem;padding:10px;
       <button type="button" class="choice" id="pgMany" aria-pressed="false"><strong>Varias hojas</strong><small>cuadros más grandes</small></button>
     </div>
     <label class="check"><input type="checkbox" id="pagesBW"><span>Hojas en blanco y negro (solo símbolos, ahorra tinta)</span></label>
+    <label class="check"><input type="checkbox" id="pagesCenter"><span>Marcar la línea del centro en las hojas</span></label>
     <button class="btn primary" type="button" id="pdfBtn">Descargar PDF tamaño carta</button>
     <button class="btn whatsapp" type="button" id="sharePdfBtn"><svg class="wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg>Enviar el patrón por WhatsApp</button>
     <p class="hint" id="pgHint">Guarda el PDF y mándalo a imprimir en hoja carta. También puedes mantener el dedo sobre la imagen para guardarla.</p>
@@ -1071,6 +1073,12 @@ function drawChart(ctx,o){
   ctx.strokeStyle=T.grid10;ctx.lineWidth=Math.max(1.5,cell/7);ctx.beginPath();
   for(let c=0;c<=w;c++){if((x0+c)%10&&c!==0&&c!==w)continue;const X=m+c*cell;ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
   for(let r=0;r<=h;r++){if((y0+r)%10&&r!==0&&r!==h)continue;const Y=m+r*cell;ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}ctx.stroke();
+  // línea del centro (opcional): cruza todo el patrón por la mitad
+  if(o.center){ctx.save();ctx.strokeStyle='#C72B3B';ctx.lineWidth=Math.max(1.5,cell/8);ctx.setLineDash([Math.max(4,cell*.6),Math.max(3,cell*.4)]);ctx.beginPath();
+    const X=m+(S.cols/2-x0)*cell,Y=m+(S.rows/2-y0)*cell;
+    if(X>=m&&X<=m+w*cell){ctx.moveTo(X,m);ctx.lineTo(X,m+h*cell)}
+    if(Y>=m&&Y<=m+h*cell){ctx.moveTo(m,Y);ctx.lineTo(m+w*cell,Y)}
+    ctx.stroke();ctx.restore()}
   // números
   ctx.fillStyle=T.num;ctx.font=`700 ${o.num||Math.max(10,Math.min(13,m*.42))}px "Atkinson Hyperlegible", system-ui, sans-serif`;
   for(let c=1;c<=w;c++)if((x0+c)%10===0)ctx.fillText(String(x0+c),m+c*cell,m*.38);
@@ -1100,13 +1108,13 @@ function drawScreen(){
   const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2,4096/Math.max(W,H)));
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
   const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);S.dpr=dpr;
-  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark()});S.drawnKey=S.key;
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark(),center:S.center});S.drawnKey=S.key;
   renderProgress();
 }
 // redibuja solo los cuadritos indicados (con uno de margen para las líneas), sin tocar el resto del patrón
 function drawCells(list){if(!S.grid||!list.length)return;const ctx=$('chart').getContext('2d');ctx.setTransform(S.dpr||1,0,0,S.dpr||1,0,0);
   let r0=1e9,r1=-1,c0=1e9,c1=-1;for(const i of list){const r=(i/S.cols)|0,c=i%S.cols;if(r<r0)r0=r;if(r>r1)r1=r;if(c<c0)c0=c;if(c>c1)c1=c}
-  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark(),only:{r0,r1,c0,c1}});
+  drawChart(ctx,{x0:0,y0:0,w:S.cols,h:S.rows,cell:S.cell,m:S.m,mode:S.mode,hi:S.hi,done:S.done,dark:isDark(),center:S.center,only:{r0,r1,c0,c1}});
   renderProgress()}
 function centerChart(){const w=$('chartwrap');w.scrollLeft=Math.max(0,(w.scrollWidth-w.clientWidth)/2);w.scrollTop=Math.max(0,(w.scrollHeight-w.clientHeight)/2)}
 function renderProgress(){
@@ -1264,7 +1272,7 @@ function buildPages(){
     x.fillStyle='#111';x.font='700 18px "Atkinson Hyperlegible", system-ui, sans-serif';x.textBaseline='middle';
     x.fillText(`Hoja ${n} de ${total}`,m,20);x.font='400 14px "Atkinson Hyperlegible", system-ui, sans-serif';x.fillStyle='#555';
     x.fillText(`Columnas ${x0+1}–${x0+w} · Filas ${y0+1}–${y0+h}`,m,42);
-    x.save();x.translate(0,top);drawChart(x,{x0,y0,w,h,cell,m,mode:bw?'sym':'color',hi:-1,done:null});x.restore();
+    x.save();x.translate(0,top);drawChart(x,{x0,y0,w,h,cell,m,mode:bw?'sym':'color',hi:-1,done:null,center:$('pagesCenter').checked});x.restore();
     addPage(cv,`Hoja ${n}: columnas ${x0+1}–${x0+w}, filas ${y0+1}–${y0+h}`);
   }
   // hoja de hilos
@@ -1299,7 +1307,7 @@ function letterSheet(){
   x.fillText(`${S.cols} × ${S.rows} puntadas · Aida ${ct} · ${wcm} × ${hcm} cm · ${strands()} hebras`,M,M+72);
   const chartW=S.cols*cell+2*m,chartH=S.rows*cell+2*m;
   x.save();x.translate(Math.round((W-chartW)/2),M+headH);
-  drawChart(x,{x0:0,y0:0,w:S.cols,h:S.rows,cell,m,mode:bw?'sym':'color',hi:-1,done:null,num:22});x.restore();
+  drawChart(x,{x0:0,y0:0,w:S.cols,h:S.rows,cell,m,mode:bw?'sym':'color',hi:-1,done:null,num:22,center:$('pagesCenter').checked});x.restore();
   // lista de hilos
   let y=M+headH+chartH+16;x.fillStyle='#111';x.font=`700 28px ${F}`;x.fillText('Hilos DMC',M,y+20);y+=56;
   const colW=availW/lcols;
@@ -1397,6 +1405,10 @@ $('bgoff').onchange=schedule;$('clean').onchange=schedule;
 $('count').onchange=()=>{renderFacts();renderThreads();updateSimple();saveSoon();S.pagesDirty=true;if(S.tab==='hojas')buildPages()};
 $('fabric').onchange=()=>{if(S.tab==='ajustes')drawPreview();saveSoon()};
 $('pagesBW').onchange=()=>{S.pagesDirty=true;buildPages()};
+$('pagesCenter').onchange=()=>{S.pagesDirty=true;buildPages()};
+// la línea del centro en pantalla se recuerda en este aparato
+S.center=store('hilo-centro')==='1';$('centerLine').checked=S.center;
+$('centerLine').onchange=()=>{S.center=$('centerLine').checked;store('hilo-centro',S.center?'1':'0');drawScreen()};
 $('mColor').onclick=()=>{S.mode='color';$('mColor').setAttribute('aria-pressed','true');$('mSym').setAttribute('aria-pressed','false');drawScreen()};
 $('mSym').onclick=()=>{S.mode='sym';$('mSym').setAttribute('aria-pressed','true');$('mColor').setAttribute('aria-pressed','false');drawScreen()};
 $('zIn').onclick=()=>{S.cell=Math.min(maxCell(),S.cell+3);drawScreen()};

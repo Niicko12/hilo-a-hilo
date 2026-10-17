@@ -40,6 +40,7 @@ La app está organizada en 5 pasos (menú abajo en el celular, arriba en la comp
 
 - **Modo bordar:** toca un cuadrito para marcarlo. Para marcar varios del mismo color, **deja el dedo quieto un momento y arrastra**. "Deshacer" quita la última marca o la pasada completa.
 - **🔍 Buscar lo que falta:** escoge un hilo y la app te lleva al siguiente cuadrito sin marcar de ese color. La lista de hilos dice cuántos faltan y cuáles ya están terminados.
+- **Línea del centro:** además de los triángulos rojos, se puede mostrar una línea punteada que cruza el patrón por la mitad, en pantalla y en las hojas impresas.
 - Si cambias el tamaño, los colores o las letras después de marcar puntadas, **tu avance no se borra**: aparece un aviso con el botón **"↩ Volver a como estaba"**.
 
 ### Letras que se leen bien
@@ -62,6 +63,35 @@ Las letras chicas de una imagen se vuelven manchas al convertirlas en puntadas. 
 Cada bordado (foto, ajustes, letras y avance) se guarda solo en el mismo teléfono o computadora; no se pierde al recargar ni al cerrar la página.
 
 En *Mis bordados*, **"Guardar copia de seguridad"** descarga un archivo con todos los bordados, y **"Recuperar una copia"** los trae de vuelta en otro aparato o después de borrar el navegador. Conviene hacer una copia de vez en cuando.
+
+## Instalarla en la tablet o el celular (Android)
+
+Mi mamá la usa en una tablet Android. Hay dos maneras de tenerla como app, y las dos funcionan sin internet.
+
+### Opción 1: desde Chrome (la más fácil, sin APK)
+
+1. Abre <https://hilo-a-hilo.vercel.app> en **Chrome**, con internet.
+2. Toca el menú **⋮** (arriba a la derecha) → **"Instalar app"** o **"Agregar a la pantalla de inicio"**.
+3. Aparece el ícono del corazón en punto de cruz. Se abre a pantalla completa, como cualquier app.
+
+Se actualiza sola cada vez que se publica un cambio. En iPhone o iPad: Safari → Compartir → "Agregar a inicio".
+
+### Opción 2: un APK
+
+Un APK sirve para pasar la app por WhatsApp o un cable a un aparato, o para subirla algún día a Google Play. La primera versión que instalé en la tablet de mi mamá fue un APK. Las envolturas sencillas de tipo WebView no siempre dejan descargar el PDF ni compartir por WhatsApp, así que conviene hacerlo con **PWABuilder**, que usa el Chrome del aparato por dentro (*Trusted Web Activity*):
+
+1. Entra a <https://www.pwabuilder.com>, escribe `https://hilo-a-hilo.vercel.app` y toca **Start**.
+2. Toca **Package for stores** → **Android** → **Generate Package**. Deja el nombre del paquete que propone (`app.vercel.hilo_a_hilo.twa`) y en *Signing key* escoge **Create new**.
+3. Descarga el `.zip`. Adentro vienen:
+   - el **`.apk`**, que es el que se instala en la tablet;
+   - el **`.aab`**, solo para Google Play;
+   - el **`signing.keystore`** y **`signing-key-info.txt`**. Guárdalos en un lugar seguro y **nunca los subas al repositorio**: sin ellos no se puede sacar una actualización del mismo APK;
+   - **`assetlinks.json`**: cópialo a `.well-known/assetlinks.json` en este repositorio y súbelo. Así el APK se abre sin la barra de dirección de Chrome.
+4. Pasa el `.apk` a la tablet (por WhatsApp, Drive o cable) y ábrelo. Android pedirá permiso para "instalar apps de origen desconocido".
+
+> ⚠️ **Antes de desinstalar un APK viejo**, abre *Mis bordados* → **"Guardar copia de seguridad"**. Desinstalar una app borra los bordados que tenía guardados. Con el APK nuevo, toca **"Recuperar una copia"** y vuelven todos.
+
+El APK no trae la app adentro: abre la página publicada y la guarda para usarla sin internet. Por eso cada cambio que se publica también le llega al APK, sin reinstalar nada.
 
 ## Cómo está hecha
 

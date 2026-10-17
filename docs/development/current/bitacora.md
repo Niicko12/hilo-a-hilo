@@ -3,7 +3,7 @@
 > Registro de cada sesión (metodología Oden: progreso diario). Lo más nuevo, arriba.
 > Para seguir en otra sesión (Claude móvil, web o terminal): lee esto, luego `.claude/epics/mejoras-v2/epic.md`.
 
-## En qué quedamos (2026-10-11)
+## En qué quedamos (2026-10-17)
 
 **Hecho y publicado:** tareas 001–004 y 006–009 de `mejoras-v2`.
 
@@ -12,8 +12,16 @@
    - Abrir la app, luego apagar el wifi y volver a abrirla → debe abrir y armar el PDF.
    - Modo bordar: dejar el dedo quieto y arrastrar marca; deslizar rápido mueve el patrón.
    - "Descargar PDF", "Guardar copia de seguridad" y "Compartir por WhatsApp" dentro del APK.
-2. **Tarea 005 (APK):** el autor tiene que decir con qué herramienta hizo el APK. Si las descargas o compartir fallan, generar uno nuevo con PWABuilder (https://www.pwabuilder.com, URL `https://hilo-a-hilo.vercel.app`), que ahora sí es posible porque la app ya es PWA. **Antes de desinstalar el APK viejo: Guardar copia de seguridad** (desinstalar borra los bordados).
-3. Ideas para después (competitive-analysis.md): línea de centro opcional, pespunte, conectar el buscador a una IA gratuita (Gemini).
+2. **Tarea 005 (APK):** pasos en el README ("Instalarla en la tablet"). Lo más fácil: Chrome → ⋮ → "Instalar app". Si se quiere APK: PWABuilder, guardar la llave fuera del repo y subir `assetlinks.json` a `.well-known/`. **Antes de desinstalar el APK viejo: Guardar copia de seguridad** (desinstalar borra los bordados).
+3. Ideas para después (competitive-analysis.md): pespunte, conectar el buscador a una IA gratuita (Gemini). La línea de centro ya está (sesión 4).
+
+## 2026-10-17 — Sesión 4: línea del centro, tablet simulada y APK en el README
+
+- **Línea del centro** opcional: en Patrón ("Mostrar la línea del centro", se recuerda en el aparato) y en Imprimir ("Marcar la línea del centro en las hojas"). Apagada de inicio; el patrón y `S.key` no cambian.
+- **Prueba de tablet Android simulada** (800×1280, táctil, Chrome de Android): deslizar no marca, dedo quieto + arrastrar marca la racha, toque corto marca uno; PDF y copia de seguridad se descargan; WhatsApp con menú de compartir y sin él (guarda el archivo y abre wa.me); sin wifi abre con el avance. Pruebas: 12/12.
+- **APK:** sección nueva en el README (instalar desde Chrome, o APK con PWABuilder, cuidado con la llave y copia de seguridad antes de desinstalar). No se generó el APK desde aquí: la llave de firma la debe crear y guardar el autor.
+- No hecho: **pespunte** (cambia los datos guardados, el PDF y la lista de hilos; necesita su propia tarea) y **Gemini** (necesita una clave del autor y un servidor que la esconda; necesita ADR nuevo).
+- `sw.js` → `hilo-v3`.
 
 ## 2026-10-17 — Sesión 3: repositorio público
 

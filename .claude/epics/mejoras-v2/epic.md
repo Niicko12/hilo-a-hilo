@@ -15,7 +15,7 @@ Orden pensado para proteger primero los datos de mamá y después la comodidad.
 | 002 | Modo día y noche | R2 | ✅ hecho (`df2b4e2`) | — |
 | 003 | Pruebas en navegador (`tests/`) | — | ✅ hecho | — |
 | 004 | PWA sin conexión (manifest, iconos, service worker) | R3 | ✅ hecho | — |
-| 005 | APK con PWABuilder (TWA) o comprobar el actual | R4 | ⏳ falta saber la herramienta y probar en la tablet | 004 ✅ |
+| 005 | APK con PWABuilder (TWA) o comprobar el actual | R4 | ⏳ pasos en el README; falta generarlo en PWABuilder y probar en la tablet real | 004 ✅ |
 | 006 | Procesamiento rápido (tabla de color, arreglo plano, dibujo por color) | R5 | ✅ hecho (941 → ~306 ms) | 003 |
 | 007 | Marcar puntadas rápido (redibujar solo el cuadro, zoom de bordar) | R6 | ✅ hecho (154 → 0.1 ms) | 003 |
 | 008 | Buscar lo que falta + contador por hilo | R7 | ✅ hecho | 007 |

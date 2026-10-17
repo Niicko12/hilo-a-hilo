@@ -104,3 +104,67 @@ test('es instalable: manifest con iconos',async()=>{const {ctx,pg}=await open();
   const m=await pg.evaluate(async()=>(await fetch(document.querySelector('link[rel=manifest]').href)).json());
   assert.strictEqual(m.display,'standalone');assert.ok(m.icons.some(i=>i.sizes==='512x512'&&i.purpose==='maskable'));
   for(const i of m.icons){const r=await pg.evaluate(async u=>(await fetch(u)).status,i.src);assert.strictEqual(r,200)}await ctx.close()});
+
+test('línea del centro: se dibuja en pantalla y en las hojas, y se recuerda',async()=>{const {ctx,pg,errs}=await open();
+  await pg.click('#t-patron');
+  // pixel justo en el centro del patrón, entre dos cuadritos
+  const px=()=>pg.evaluate(()=>{const cv=document.getElementById('chart'),d=S.dpr||1,X=S.m+S.cols/2*S.cell,Y=S.m+(S.rows/2+.5)*S.cell;
+    return [...cv.getContext('2d').getImageData(Math.round(X*d),Math.round(Y*d),1,1).data].slice(0,3).join()});
+  const before=await px();await pg.check('#centerLine');const after=await px();
+  assert.notStrictEqual(before,after,'aparece la línea');
+  await pg.reload();await pg.waitForFunction(()=>S.grid);assert.ok(await pg.isChecked('#centerLine'),'se recuerda');
+  await pg.click('#t-hojas');await pg.check('#pagesCenter');
+  assert.ok(await pg.evaluate(()=>{const d=makePdf();return d&&d.getNumberOfPages()>=1}));
+  assert.deepStrictEqual(errs,[]);await ctx.close()});
+
+// Como en la tablet Android de mamá: pantalla táctil, Chrome de Android, sin wifi y con descargas.
+const TABLET={viewport:{width:800,height:1280},deviceScaleFactor:2,isMobile:true,hasTouch:true,acceptDownloads:true,
+  userAgent:'Mozilla/5.0 (Linux; Android 14; SM-X210) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'};
+// toca con el dedo: quieto "ms" milisegundos y luego se arrastra hasta (x1,y1)
+async function finger(pg,x0,y0,x1,y1,ms){const cdp=await pg.context().newCDPSession(pg);
+  const t=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
+  await t('touchStart',x0,y0);await pg.waitForTimeout(ms);
+  for(let k=1;k<=8;k++){await t('touchMove',x0+(x1-x0)*k/8,y0+(y1-y0)*k/8);await pg.waitForTimeout(20)}
+  await t('touchEnd');await pg.waitForTimeout(500)}
+
+test('tablet Android: marcar con el dedo, sin wifi, PDF, copia de seguridad y WhatsApp',async()=>{
+  const {ctx,pg,errs}=await open(TABLET);
+  await uploadSample(pg);await pg.click('#t-patron');await pg.check('#marking');
+  const run=await pg.evaluate(()=>{let best=null;for(let r=0;r<S.rows;r++){let c=0;while(c<S.cols){const v=S.grid[r*S.cols+c];let e=c;while(e+1<S.cols&&S.grid[r*S.cols+e+1]===v)e++;
+      if(v>=0&&(!best||e-c>best.e-best.c))best={r,c,e,v};c=e+1}}
+    const w=document.getElementById('chartwrap');w.scrollLeft=Math.max(0,S.m+best.c*S.cell-20);w.scrollTop=Math.max(0,S.m+best.r*S.cell-100);
+    const b=document.getElementById('chart').getBoundingClientRect(),y=b.top+S.m+(best.r+.5)*S.cell;
+    return {...best,x0:b.left+S.m+(best.c+.5)*S.cell,x1:b.left+S.m+(best.e+.5)*S.cell,y}});
+  // deslizar rápido mueve el patrón y no marca nada
+  await finger(pg,run.x0,run.y,run.x1,run.y,0);assert.strictEqual(await pg.evaluate(()=>S.done.size),0,'deslizar no marca');
+  // dedo quieto y arrastrar marca la racha completa de ese color
+  await pg.evaluate(r=>{const w=document.getElementById('chartwrap');w.scrollLeft=Math.max(0,S.m+r.c*S.cell-20);w.scrollTop=Math.max(0,S.m+r.r*S.cell-100)},run);
+  await finger(pg,run.x0,run.y,run.x1,run.y,450);
+  assert.strictEqual(await pg.evaluate(()=>S.done.size),run.e-run.c+1,'dedo quieto + arrastrar marca la racha');
+  // toque corto marca un cuadrito más
+  await pg.click('#undoBtn');await pg.touchscreen.tap(run.x0,run.y);await pg.waitForTimeout(300);
+  assert.strictEqual(await pg.evaluate(()=>S.done.size),1,'un toque marca uno');
+
+  // PDF y copia de seguridad se descargan como archivo
+  await pg.click('#t-hojas');
+  const [pdf]=await Promise.all([pg.waitForEvent('download'),pg.click('#pdfBtn')]);assert.match(pdf.suggestedFilename(),/\.pdf$/);
+  await pg.click('#t-diseno');
+  const [bak]=await Promise.all([pg.waitForEvent('download'),pg.click('#backupBtn')]);assert.match(bak.suggestedFilename(),/\.json$/);
+  const saved=JSON.parse(fs.readFileSync(await bak.path(),'utf8'));assert.ok(JSON.stringify(saved).length>100,'la copia trae los bordados');
+
+  // WhatsApp: con menú de compartir, va el archivo; sin él (como en algunos APK), se guarda y se abre WhatsApp
+  await pg.evaluate(()=>{window.__shared=null;navigator.canShare=()=>true;navigator.share=async d=>{window.__shared=d.files[0].name}});
+  await pg.click('#t-ajustes');await pg.click('#shareImgBtn');await pg.waitForFunction(()=>window.__shared);
+  assert.match(await pg.evaluate(()=>window.__shared),/\.png$/);
+  await pg.evaluate(()=>{navigator.canShare=undefined;navigator.share=undefined});
+  await pg.click('#t-hojas');
+  const [file,wa]=await Promise.all([pg.waitForEvent('download'),ctx.waitForEvent('page'),pg.click('#sharePdfBtn')]);
+  assert.match(file.suggestedFilename(),/\.pdf$/);await wa.waitForURL(/wa\.me|whatsapp/).catch(()=>{});assert.match(wa.url(),/wa\.me|whatsapp/);
+
+  // sin wifi: vuelve a abrir con el bordado y el avance
+  await pg.evaluate(async()=>{await navigator.serviceWorker.ready});
+  await pg.reload();await pg.waitForFunction(()=>navigator.serviceWorker.controller&&S.grid);await pg.waitForTimeout(500);
+  await ctx.setOffline(true);await pg.reload();await pg.waitForFunction(()=>typeof S!=='undefined'&&S.proj&&S.grid,null,{timeout:15000});await pg.waitForTimeout(600);
+  assert.strictEqual(await pg.evaluate(()=>S.done.size),1,'el avance sigue sin wifi');
+  assert.ok(await pg.evaluate(()=>{const d=makePdf();return d&&d.getNumberOfPages()>=1}),'PDF sin wifi');
+  assert.deepStrictEqual(errs,[]);await ctx.close()});

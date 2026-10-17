@@ -16,3 +16,6 @@ El autor empaquetó la app como .apk y la instaló en la tablet de su mamá; fun
 
 ## Decisión
 Pendiente: depende de qué herramienta se usó y de la prueba en la tablet. La opción 2 ya es posible: desde el 2026-10-11 la app es PWA (manifest, iconos, service worker).
+
+**2026-10-17:** recomendado en el README: (1) instalar desde Chrome ("Instalar app"), que no necesita APK; (2) si hace falta APK, PWABuilder con nombre de paquete `app.vercel.hilo_a_hilo.twa` y llave nueva. El APK lo genera el autor en pwabuilder.com porque la llave de firma es suya y no debe salir de sus manos ni entrar al repositorio. Al tenerla, se sube `assetlinks.json` a `.well-known/`.
+Las descargas, la copia de seguridad, WhatsApp (con y sin menú de compartir) y el modo sin wifi se probaron en una tablet Android **simulada** (prueba `tablet Android…` en `tests/hilo.test.js`). Falta confirmarlo en la tablet real.
